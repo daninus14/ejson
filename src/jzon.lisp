@@ -1134,8 +1134,14 @@ see `close-parser'"
                 (list slot-name
                       (slot-value element slot-name)
                       (c2mop:slot-definition-type s))))
-            (remove-if-not (lambda (s) (slot-boundp element (c2mop:slot-definition-name s)))
-                           (c2mop:class-slots class)))))
+            (get-slots-to-encode class element))))
+
+(defgeneric get-slots-to-encode (class element)
+  (:documentation "This function is used to get the slots to be json encoded. The class is the first parameter in order to allow for extending the dispatch based on the metaclass of the object."))
+
+(defmethod get-slots-to-encode (class element)  
+  (remove-if-not (lambda (s) (slot-boundp element (c2mop:slot-definition-name s)))
+                 (c2mop:class-slots class)))
 
 (defgeneric coerced-fields (element)
   (:documentation "Return a list of key definitions for `element'.
