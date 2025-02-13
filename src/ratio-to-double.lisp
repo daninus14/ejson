@@ -3,10 +3,10 @@
 ;;     CCL::%DOUBLE-FLOAT
 ;; alongside helper functions and values
 ;; This `ratio-to-double' function is used to
-;; introduce portability across CL implementations using jzon
+;; introduce portability across CL implementations using ejson
 ;; when dealing with certain number ranges, in particular, denormalized
 ;; numbers, where SBCL's rouding model causes us to lose data
-;; in the course of (jzon:parse (jzon:stringify x))
+;; in the course of (ejson:parse (ejson:stringify x))
 ;; due to the way that it rounds rationals close to 0
 ;; eg: 4.9d-324 yields 0.0 on SBCL
 ;;

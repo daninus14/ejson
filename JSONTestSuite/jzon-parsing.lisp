@@ -1,7 +1,7 @@
 (defpackage #:ejson-parsing
   (:use #:cl)
   (:local-nicknames
-   (#:jzon #:ejson))
+   (#:ejson #:ejson))
   (:import-from
    #:alexandria
    #:eswitch
@@ -19,23 +19,23 @@
 
 (defun parser-fn (name)
   (eswitch (name :test #'string-equal)
-    ("cl-json" #'cl-json:decode-json-from-source)
-    ("jzon" #'jzon:parse)
-    ("jonathan" (lambda (s) (jonathan:parse (read-stream-content-into-string s))))
-    ("jsown" (lambda (s) (jsown:parse (read-stream-content-into-string s))))
-    ("json-streams" #'json-streams:json-parse)
-    ("shasht" #'shasht:read-json)
-    ("yason" #'yason:parse)))
+           ("cl-json" #'cl-json:decode-json-from-source)
+           ("ejson" #'ejson:parse)
+           ("jonathan" (lambda (s) (jonathan:parse (read-stream-content-into-string s))))
+           ("jsown" (lambda (s) (jsown:parse (read-stream-content-into-string s))))
+           ("json-streams" #'json-streams:json-parse)
+           ("shasht" #'shasht:read-json)
+           ("yason" #'yason:parse)))
 
 (defun main (&rest argv)
   (prog ((file (second argv))
-         (parser-name (or (third argv) "jzon")))
+         (parser-name (or (third argv) "ejson")))
      (unless file
        (format *error-output* "Missing input file.~%")
        (return 2))
      (when (string= file "--help")
        (format t "usage:
-  jzon-parsing test-file [parser-name]
+  ejson-parsing test-file [parser-name]
 ")
        (return 0))
      (let ((parser (parser-fn parser-name)))

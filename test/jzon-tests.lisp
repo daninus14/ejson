@@ -61,26 +61,26 @@
    #:write-values*)
   (:import-from #:uiop)
   (:export
-   #:jzon
+   #:ejson
    #:run
    #:main))
 
 (in-package #:ejson-tests)
 
-(def-suite jzon
-  :description "Tests for the jzon library.")
+(def-suite ejson
+  :description "Tests for the ejson library.")
 
 (defun run ()
-  (fiveam:run! 'jzon))
+  (fiveam:run! 'ejson))
 
 (defun main (&rest args)
   (declare (ignore args))
   (let ((result (run)))
     (if result 0 -1)))
 
-(in-suite jzon)
+(in-suite ejson)
 
-(def-suite parsing :in jzon)
+(def-suite parsing :in ejson)
 
 (in-suite parsing)
 
@@ -439,11 +439,11 @@
       ((ph "x" 10 "y" 0) (parse "{ \"x\": 10, \"y\": 0}")))))
 
 (test (parse-returns-base-strings :depends-on
-                                  ;; Skip test on ECL - producing incorrectly upgraded array type https://github.com/Zulu-Inuoe/jzon/issues/59
+                                  ;; Skip test on ECL - producing incorrectly upgraded array type https://github.com/Zulu-Inuoe/ejson/issues/59
                                   #+ecl (or)
                                   #-ecl (and))
-  (is (eq '#.(upgraded-array-element-type 'base-char) (array-element-type (parse "\"COMMON-LISP\""))))
-  (is (eq '#.(upgraded-array-element-type 'base-char) (array-element-type (parse "\"\\u0043\\u004F\\u004D\\u004D\\u004F\\u004E\\u002D\\u004C\\u0049\\u0053\\u0050\"")))))
+      (is (eq '#.(upgraded-array-element-type 'base-char) (array-element-type (parse "\"COMMON-LISP\""))))
+      (is (eq '#.(upgraded-array-element-type 'base-char) (array-element-type (parse "\"\\u0043\\u004F\\u004D\\u004D\\u004F\\u004E\\u002D\\u004C\\u0049\\u0053\\u0050\"")))))
 
 (test parse-accepts-octet-vector
   (is-every equalp
@@ -543,12 +543,12 @@
         (json-parse-error (e)
           (is (= 4 (ejson::%json-parse-error-column e))))))
 
-;; TODO - pull this hardcode into a constant we can expose from jzon
+;; TODO - pull this hardcode into a constant we can expose from ejson
 (test parse-max-string-length-accepts-nil-for-no-limit
-  (let ((big-chungus (make-array #x500000 :element-type 'character :initial-element #\space)))
-    (setf (aref big-chungus 0) #.(char "\"" 0))
-    (setf (aref big-chungus (1- (length big-chungus))) #.(char "\"" 0))
-    (is (= (- #x500000 2) (count #\Space (parse big-chungus :max-string-length nil))))))
+      (let ((big-chungus (make-array #x500000 :element-type 'character :initial-element #\space)))
+        (setf (aref big-chungus 0) #.(char "\"" 0))
+        (setf (aref big-chungus (1- (length big-chungus))) #.(char "\"" 0))
+        (is (= (- #x500000 2) (count #\Space (parse big-chungus :max-string-length nil))))))
 
 (test parse-max-string-length-accepts-nil-for-default-limit
   (let ((big-chungus (make-array #x500000 :element-type 'character :initial-element #\space)))
@@ -1007,7 +1007,7 @@
     (parse-next p)
     (is (equalp '(:object-key "x") (multiple-value-list (parse-next p))))))
 
-(def-suite writer :in jzon)
+(def-suite writer :in ejson)
 (in-suite writer)
 
 (defmacro with-writer-to-string ((writer &key pretty max-depth coerce-key) &body body)
@@ -1164,7 +1164,7 @@
                    (write-value* 1)
                    (write-object* "x" 0 "y" 5))))))
 
-(def-suite stringify :in jzon)
+(def-suite stringify :in ejson)
 
 (in-suite stringify)
 
@@ -1535,9 +1535,9 @@
 (test stringify-1.0e-4
   (is (equalp "1.0e-4" (stringify 1.0e-4))))
 
-(def-suite jzon.json-checker :in jzon)
+(def-suite ejson.json-checker :in ejson)
 
-(in-suite jzon.json-checker)
+(in-suite ejson.json-checker)
 
 ;; fail1 in json-checker goes against RFC
 ;; (test fail1
