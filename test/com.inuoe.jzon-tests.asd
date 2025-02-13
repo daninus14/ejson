@@ -1,7 +1,7 @@
 (defsystem #:ejson-tests
   :version "0.0.0"
   :description "Tests for the ejson library"
-  :author "Wilfredo Velázquez-Rodríguez <zulu.inuoe@gmail.com>"
+  :author "Daniel Nussenbaum"
   :license "MIT"
   :components
   ((:file "ejson-tests"))
