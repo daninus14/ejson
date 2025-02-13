@@ -1126,6 +1126,7 @@ see `close-parser'"
          (%parse %step %read-string %pos key-fn max-depth (and allow-comments t) (and allow-trailing-comma t) (and allow-multiple-content t)))))))
 
 (defgeneric %coerced-fields-slots (element))
+
 (defmethod %coerced-fields-slots (element)
   (let ((class (class-of element)))
     (c2mop:ensure-finalized class)
