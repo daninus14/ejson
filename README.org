@@ -1,4 +1,4 @@
-# ejson 
+* ejson 
 
 An extensible, correct and safe JSON [RFC 8259][JSONRFC] reader/writer.
 
@@ -19,7 +19,7 @@ Please see the [changelog](CHANGELOG.md) for a list of changes between versions.
 
 [![Actions Status](https://github.com/Zulu-Inuoe/ejson/workflows/ci/badge.svg)](https://github.com/Zulu-Inuoe/ejson/actions)
 
-#### Table of Contents
+**** Table of Contents
 
 * [Quickstart](#quickstart) 
   * [Reading](#reading)
@@ -68,7 +68,7 @@ Most users will simply use [`ejson:parse`](#ejsonparse) for reading, and [`ejson
 (uiop:add-package-local-nickname '#:ejson '#:ejson)
 ```
 
-### Reading
+*** Reading
 
 [`ejson:parse`](#ejsonparse) will parse JSON and produce a CL value
 
@@ -94,7 +94,7 @@ Most users will simply use [`ejson:parse`](#ejsonparse) for reading, and [`ejson
 (equalp #("alone")  (gethash "tags" *ht*))
 ```
 
-### Writing
+*** Writing
 
 [`ejson:stringify`](#ejsonstringify) will serialize a value to JSON:
 
@@ -112,7 +112,7 @@ Most users will simply use [`ejson:parse`](#ejsonparse) for reading, and [`ejson
  ]
 ```
 
-### Type Mappings
+*** Type Mappings
 
 ejson cannonically maps types per the following chart:
 
@@ -134,7 +134,7 @@ When writing, additional values are supported. Please see the section [ejson:str
 
 As noted, [`ejson:parse`](#ejsonparse) and [`ejson:stringify`](#ejsonstringify) suit most use-cases, this section goes into more detail, as well as an introduction to the [`ejson:writer` interface](#ejsonwriter).
 
-### ejson:parse
+*** ejson:parse
 
 *Function* **ejson:parse** *in &key max-depth allow-comments allow-trailing-comma allow-multiple-content max-string-length key-fn*
 
@@ -150,7 +150,7 @@ As noted, [`ejson:parse`](#ejsonparse) and [`ejson:stringify`](#ejsonstringify) 
 
 *value* - a `ejson:json-element` (see [Type Mappings](#type-mappings))
 
-#### Description
+**** Description
 
 Reads JSON from `in` and returns a `ejson:json-element` per [Type Mappings](#type-mappings).
 
@@ -179,7 +179,7 @@ The keyword arguments control optional features when reading:
 
 When either *max-depth* or *max-string-length* is exceeded, `ejson:parse` shall signal a `ejson:json-parse-limit-error` error.
 
-##### *allow-multiple-content*
+***** =*allow-multiple-content*=
 
 JSON requires there  be only one toplevel element. Using *allow-multiple-content* tells `ejson:parse` to stop after reading one full toplevel element:
 
@@ -206,7 +206,7 @@ This is to prevent errors caused by the lookahead necessary for parsing non-deli
 
 This is not required when using [`ejson:parse-next`](#ejsonparse-next).
 
-##### *key-fn*
+***** *key-fn*
 
 When parsing objects, *key-fn* is called on each of that object's keys (`simple-string`):
 
@@ -245,7 +245,7 @@ This *may* help speed up parsing on highly heterogeneous JSON.
 
 **Note**: It is recommended leave this as default. The performance improvement is usually not substantive enough to warrant duplicated strings, and interning strings from untrusted JSON is a security risk.
 
-### ejson:span
+*** ejson:span
 
 *Function* **ejson:span** *in* *&key start end*
 
@@ -256,20 +256,20 @@ This *may* help speed up parsing on highly heterogeneous JSON.
 
 *span* a span object representing the range.
 
-#### Description
+**** Description
 
 Create a span to be used in [`ejson:parse`](#ejsonparse), or [`ejson:make-parser`](#ejsonparser) in order to specify a bounded *start* and *end* for a string, stream or vector.
 
 NOTE: For streams, only input streams are allowed.
 
-##### Example
+***** Example
 
 ```lisp
 (ejson:parse (ejson:span "garbage42moregarbage" :start 7 :end 9)) 
 #| => 42 |#
 ```
 
-### ejson:stringify
+*** ejson:stringify
 
 *Function* **ejson:stringify** *value* *&key stream pretty coerce-key replacer*
 
@@ -284,7 +284,7 @@ NOTE: For streams, only input streams are allowed.
 
 *result* - nil, or a string
 
-#### Description
+**** Description
 
 Serializes *value* to JSON and writes it to *stream*.
 
@@ -302,7 +302,7 @@ See [Additionally Supported Types For Writing](#additionally-supported-types-for
 
 When either *max-depth* is exceeded, [`ejson:stringify`](#ejsonstringify) shall signal a `ejson:json-write-limit-error` error.
 
-##### stream
+***** stream
 
 *stream* is a destination as in `format`, or a `pathname`:
 
@@ -312,11 +312,11 @@ When either *max-depth* is exceeded, [`ejson:stringify`](#ejsonstringify) shall 
 * a `string` with a fill-pointer - writes to that string as `with-output-to-string`
 * a `pathname` - Must designate a file. Creates or supersedes a new file and writes to it
 
-##### coerce-key
+***** coerce-key
 
 A function for coercing keys to strings. See [Custom Serialization](#custom-serialization).
 
-##### replacer
+***** replacer
 
 A designator for a 'replacer' function as outlined in the JavaScript [JSON.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) method.
 
@@ -343,7 +343,7 @@ However, due to the lack of `undefined` in CL, we make use of multiple return va
 ]
 ```
 
-#### Additionally Supported Types For Writing
+**** Additionally Supported Types For Writing
 
 When writing, the following type mappings are also available:
 
@@ -366,7 +366,7 @@ If you have an alist/plist you wish to write, we recommend the use of either `al
 
 Previously, ejson attempted to detect alists/plists, but this was error-prone and came with many edge-cases.
 
-##### Symbol key case
+***** Symbol key case
 
 By default, when a symbol represents a **key** in a JSON object, its name will be downcased, unless it contains mixed-case characters.
 
@@ -390,7 +390,7 @@ For example:
 
 Please see [Custom Serialization](#custom-serialization) and [write-value](#write-value) for more details.
 
-### ejson:writer
+*** ejson:writer
 
 A second way of writing JSON is to use the `ejson:writer` API, which allows you to fully control the values, order, and types, including arbitrary logic.
 
@@ -449,7 +449,7 @@ For example, these two are equivalent:
   (write-value writer "foo"))
 ```
 
-### ejson:make-writer
+*** ejson:make-writer
 
 *Function* **ejson:make-writer** *&key stream pretty coerce-key replacer max-depth => writer*
 
@@ -461,7 +461,7 @@ For example, these two are equivalent:
 
 *writer* - a `ejson:writer`
 
-#### Description
+**** Description
 
 Construct a [`ejson:writer`](#ejsonwriter) for writing JSON via subsequent calls to [`ejson:write-value`](#ejsonwrite-value).
 
@@ -471,7 +471,7 @@ If *pretty* is true, all output is indented with spaces and newlines.
 
 When either *max-depth* is exceeded, functions which increase the depth, such as `ejson:begin-array` or `ejson:begin-object` shall signal a `ejson:json-write-limit-error` error.
 
-##### stream
+***** stream
 
 *stream* is a destination as in `format`, or a `pathname`:
 
@@ -481,17 +481,17 @@ When either *max-depth* is exceeded, functions which increase the depth, such as
 * a `string` with a fill-pointer - writes to that string as `with-output-to-string`
 * a `pathname` - Must designate a file. Creates or supersedes a new file and writes to it
 
-##### coerce-key
+***** coerce-key
 
 A function for coercing keys to strings. See [Custom Serialization](#custom-serialization).
 
-##### replacer
+***** replacer
 
 Please see the section in [`ejson:stringify`](#ejsonstringify).
 
 :warning: Because [`ejson:make-writer`](#ejsonmake-writer) can open a file, it is recommended you use [`ejson:with-writer`](#ejsonwith-writer) instead, unless you need indefinite extent.
 
-### ejson:close-writer
+*** ejson:close-writer
 
 *Function* **ejson:close-writer** *writer*
 
@@ -499,11 +499,11 @@ Please see the section in [`ejson:stringify`](#ejsonstringify).
 
 * *writer* - a [`ejson:writer`](#ejsonwriter)
 
-#### Description
+**** Description
 
 Closes the writer and releases any held resources.
 
-### ejson:with-writer
+*** ejson:with-writer
 
 *Macro* **ejson:with-writer** *(var &rest args) declaration\* form\**
 
@@ -514,7 +514,7 @@ Closes the writer and releases any held resources.
 * *declaration* - a declare expression, not evaluated
 * *forms* - an implicig progn
 
-#### Description
+**** Description
 
 As [`ejson:make-writer`](#ejsonmake-writer) + `unwind-protect` + [`ejson:close-writer`](#ejsonclose-writer).
 
@@ -522,7 +522,7 @@ Use this like you would `with-open-file`.
 
 `ejson:with-writer*` binds the variable [`ejson:*writer*`](#ejsonwriter)
 
-### ejson:write-value
+*** ejson:write-value
 
 *Generic Function* **ejson:write-value** *writer* *value*
 
@@ -531,7 +531,7 @@ Use this like you would `with-open-file`.
 
 *=> writer*
 
-#### Description
+**** Description
 
 `ejson:write-value writer value` - Writes any `value` to the `writer`. Usable when writing a toplevel value, array element, or object property value.
 
@@ -541,7 +541,7 @@ Use this like you would `with-open-file`.
 
 `value` can be any `ejson:json-element`, but other values supported. See [Custom Serialization](#custom-serialization).
 
-### Other Streaming Writer Functions
+*** Other Streaming Writer Functions
 
 Here we briefly document all the additional helper functions for interfacing with the `ejson:writer`.
 
@@ -558,7 +558,7 @@ Because the entire API is duplicated, we only refer to the `*`-suffixed function
 (ejson:begin-array*)
 ```
 
-##### Arrays
+***** Arrays
 
 `ejson:begin-array writer` - Begin writing an array
 
@@ -594,7 +594,7 @@ Because the entire API is duplicated, we only refer to the `*`-suffixed function
 (ejson:write-array* 0 1 2)
 ```
 
-##### Objects 
+***** Objects 
 
 *Function* `ejson:begin-object writer` - Begin writing an object.
 
@@ -648,7 +648,7 @@ Because the entire API is duplicated, we only refer to the `*`-suffixed function
 ```
 
 
-### Streaming Writer Example
+*** Streaming Writer Example
 
 `ejson:stringify` could be approximately defined as follows:
 
@@ -672,7 +672,7 @@ Because the entire API is duplicated, we only refer to the `*`-suffixed function
         (recurse value)))))
 ```
 
-## Custom Serialization
+** Custom Serialization
 
 When using either [`ejson:stringify`](#ejsonstringify) or [`ejson:write-value`](#ejsonwrite-value), you can customize writing of any values not covered in the [Type Mappings](#type-mappings) in an few different ways.
 
@@ -680,7 +680,7 @@ The call graph looks like this:
 
 `ejson:write-value` => `(method standard-object)` => `ejson:coerced-fields`
 
-### standard-object
+*** standard-object
 
 By default, if your object is a `standard-object`, it will be serialized as a JSON object, using each of its **bound** slots as keys.
 
@@ -692,7 +692,7 @@ A slot's `:type` is used to interpret the meaning of `nil` in that slot:
 
 **Note**: When unspecified, a slot will serialize `nil` as `null`.
 
-#### standard-object Serialization Example
+**** standard-object Serialization Example
 
 Consider the following classes:
 
@@ -783,7 +783,7 @@ Here we can note:
 
 If you require more control, please see the generic function [`ejson:coerced-fields`](#coerced-fields).
 
-### Specializing coerced-fields
+*** Specializing coerced-fields
 
 The generic function `ejson:coerced-fields` is called by ejson when writing a value as a JSON object in order to find what properties that object has.
 
@@ -799,7 +799,7 @@ It is useful when the [standard-object](#standard-object) almost does what you w
 * `value` can be any value - it'll be coerced if necessary.
 * `type` is used as `:type` above, in order to resolve ambiguities with `nil`.
 
-#### coerced-fields Example
+**** coerced-fields Example
 
 Consider our previous `person` class. Say we wish to:
 
@@ -831,7 +831,7 @@ now
 
 If you require even more control, please see the section on (write-values)[#write-values] where we make use of the [writer](#streaming-writer) API.
 
-### Specializing ejson:write-value
+*** Specializing ejson:write-value
 
 The final way to support custom serialization, is the `ejson:write-value` generic function.
 
@@ -893,7 +893,7 @@ And something that cannot be done with the other methods:
 ```json
 "Classified"
 ```
-## ejson:parser
+** ejson:parser
 
 Similarly to [`ejson:writer`](#ejsonwriter), `ejson:parser` exists to parse JSON in parts by providing a simple, SAX-like streaming API.
 
@@ -915,7 +915,7 @@ An example:
   (ejson:parse-next parser)) #| nil |#
 ```
 
-### ejson:make-parser
+*** ejson:make-parser
 
 *Function* **ejson:make-parser** *in &key allow-comments allow-trailing-comma *allow-multiple-content* max-string-length key-fn*
 
@@ -930,7 +930,7 @@ An example:
 
 *value* - a `ejson:parser`
 
-#### Description
+**** Description
 
 Creates a parser from `in` for use in subsequent [`ejson:parse-next`](#ejsonparse-next).
 
@@ -952,7 +952,7 @@ JSON requires there  be only one toplevel element. Using *allow-multiple-content
 
 :warning: Because [`ejson:make-parser`](#ejsonmake-parser) can open a file, it is recommended you use [`ejson:with-parser`](#ejsonwith-parser) instead, unless you need indefinite extent.
 
-### ejson:close-parser
+*** ejson:close-parser
 
 *Function* **ejson:close-parser** *parser*
 
@@ -960,11 +960,11 @@ JSON requires there  be only one toplevel element. Using *allow-multiple-content
 
 * *parser* - a [`ejson:parser`](#ejsonparser)
 
-#### Description
+**** Description
 
 Closes the parser and releases any held resources.
 
-### ejson:with-parser
+*** ejson:with-parser
 
 *Macro* **ejson:with-parser** *(var &rest args) declaration\* form\**
 
@@ -972,13 +972,13 @@ Closes the parser and releases any held resources.
 * *declaration* - a declare expression; not evaluated.
 * *form* - an implicit progn
 
-#### Description
+**** Description
 
 As [`ejson:make-parser`](#ejsonmake-parser) + `unwind-protect` + [`ejson:close-parser`](#ejsonclose-parser).
 
 Use this like you would `with-open-file`.
 
-### ejson:parse-next
+*** ejson:parse-next
 
 *Function* **ejson:parse-next** *parser*
 
@@ -987,7 +987,7 @@ Use this like you would `with-open-file`.
 * *event* - a symbol, see below
 * *value* - a `ejson:json-atom`
 
-#### Description
+**** Description
 
 Read the next event from the [`ejson:parser`](#ejsonparser).
 
@@ -1007,7 +1007,7 @@ Always returns two values indicating the next available event on the JSON stream
 
 When the parser's *max-string-length* is exceeded, [`ejson:parse-next`](#ejsonparse-next) shall signal a `ejson:json-parse-limit-error` error. See [`ejson:make-parser`](#ejsonmake-parser).
 
-##### *allow-multiple-content*
+***** *allow-multiple-content*
 
 When *allow-multiple-content* enabled in the [`ejson:parser`](#ejsonparser), it shall emit the `nil` event after no more content is available.
 
@@ -1018,7 +1018,7 @@ When *allow-multiple-content* enabled in the [`ejson:parser`](#ejsonparser), it 
   (ejson:parse-next parser)) #| nil, nil |#
 ```
 
-### ejson:parse-next-element
+*** ejson:parse-next-element
 
 *Function* **ejson:parse-next-element** *parser &key max-depth eof-error-p eof-value*
 
@@ -1031,13 +1031,13 @@ When *allow-multiple-content* enabled in the [`ejson:parser`](#ejsonparser), it 
 
 *value* - a `ejson:json-element` (see [Type Mappings](#type-mappings))
 
-#### Description
+**** Description
 
 Read the next element from the [`ejson:parser`](#ejsonparser).
 
 This is a utility function around [`ejson:parse-next`](#ejsonparse-next) that behaves similar to [`ejson:parse`](#ejsonparse), reading a full `ejson:json-element` from a [`ejson:parser`](#ejsonparser).
 
-##### *eof-error-p* and *eof-value*
+***** *eof-error-p* and *eof-value*
 
 Similar to `cl:read-line`, *eof-error-p* controls whether we should signal an error when no more elements are available, or whether to return *eof-value*.
 
@@ -1062,7 +1062,7 @@ Use this when you want to read a full sub-object from a parser, as follows:
   (ejson:parse-next p))         #| :end-object, nil |#
 ```
 
-### Streaming Parser Example
+******* Streaming Parser Example
 
 [`ejson:parse`](#ejsonparse) could be approximately defined as follows:
 
@@ -1087,7 +1087,7 @@ Use this when you want to read a full sub-object from a parser, as follows:
               (:end-object    (finish-value (pop stack))))))))))
 ```
 
-# Motivation and Features
+***** Motivation and Features
 
 In writing ejson, we prioritize the following properties, in order:
 
@@ -1096,7 +1096,7 @@ In writing ejson, we prioritize the following properties, in order:
 * [Convenience](#convenience)
 * [Performance](#performance)
 
-## Safety
+***** Safety
 
 [RFC 8259][JSONRFC] allows setting limits on things such as:
 
@@ -1106,7 +1106,7 @@ In writing ejson, we prioritize the following properties, in order:
 
 We should be safe in the face of untrusted JSON and will error on 'unreasonable' input out-of-the-box, such as deeply nested objects or overly long strings.
 
-### Type Safety
+******* Type Safety
 
 All of ejson's public API's are type safe, issuing `cl:type-error` as appropriate.
 
@@ -1119,16 +1119,16 @@ CL-USER> (parse 2)
 
 Such errors are unreasonable.
 
-### Avoid Infinite Interning
+******* Avoid Infinite Interning
 
 ejson chooses to (by default) keep object keys as strings. Some libraries choose to `intern` object keys in some package. This is dangerous in the face of untrusted JSON, as every unique key read will be added to that package and never garbage collected.
 
-### Avoid Stack Exhaustion
+******* Avoid Stack Exhaustion
 
 `ejson:parse` is written in an iterative way which avoids exhausting the call stack. In addition, we provide `:max-depth` to guard against unreasonable inputs.
 For even more control, you can make use of the `ejson:with-parser` API's to avoid consing large amounts of user-supplied data to begin with.
 
-## Correctness
+***** Correctness
 
 This parser is written against [RFC 8259][JSONRFC] and strives to adhere strictly for maximum compliance and few surprises.
 
@@ -1140,17 +1140,17 @@ In short, ejson is the only CL JSON library which correctly:
 
 Additionally, ejson is one of a couple which never hard crash due to edge-cases like deeply nested objects/arrays.
 
-### Unambiguous values
+******* Unambiguous values
 
 Values are never ambiguous between `[]`, `false`, `{}`, `null`, or a missing key.
 
-### Compatible Float IO
+******* Compatible Float IO
 
 While more work is doubtlessly necessary to validate further, care has been taken to ensure floating-point values are not lost between `(ejson:parse (ejson:stringify f))`, even across CL implementations.
 
 In particular, certain edge-case values such as subnormals shall parse `===` with JavaScript parsing libraries.
 
-## Convenience
+***** Convenience
 
 You call `ejson:parse`, and you get a reasonably standard CL object back.
 You call `ejson:stringify` with a reasonably standard CL object and you should get reasonable JSON.
@@ -1164,7 +1164,7 @@ You call `ejson:stringify` with a reasonably standard CL object and you should g
 
 Finally, all public API's strive to have reasonable defaults so things 'Just Work'.
 
-## Performance
+***** Performance
 
 While being the last emphasized feature, it is still important to for ejson to perform best-in-class when it comes to reducing parsing times and memory usage.
 
@@ -1174,7 +1174,7 @@ With this, ejson will generally outperform all other libraries.
 
 Importantly, we also strive to be safe even in `(optimize (speed 3) (safety 0))` environments.
 
-### vs jsown
+******* vs jsown
 
 [jsown][jsown] is used as the golden standard when it comes to *performance*, as it offers consistently fast parsing speeds on a wide variety of inputs. 
 
@@ -1203,7 +1203,7 @@ If Performance is you #1 concern, and you're not afraid of your entire process c
 
 Please see the JSONTestSuite results with jsown [here](JSONTestSuite/results/jsown.log) for several other failures.
 
-### vs jonathan
+******* vs jonathan
 
 [jonathan][jonathan] boasts incredible performance ..  on JSON smaller than 200 bytes, its performance on SBCL tanks on anything larger.
 
@@ -1216,13 +1216,13 @@ CL-USER(39): (jonathan:parse "12,]???")
 CL-USER(40): (jonathan:parse 2)
 
 debugger invoked on a SB-SYS:MEMORY-FAULT-ERROR in thread
-#<THREAD "main thread" RUNNING {10010E0073}>:
+*****<THREAD "main thread" RUNNING {10010E0073}>:
   Unhandled memory fault at #xFFFFFFFFFFFFFFFD.
 ```
 
 Please see the JSONTestSuite results with Jonathan [here](JSONTestSuite/results/jonathan.log) for several other failures.
 
-### Object key pooling
+******* Object key pooling
 
 By default, ejson will keep track of object keys each `ejson:parse` (or `ejson:make-parser`), causing `string=` keys in a nested JSON object to be shared (`eq`):
 
@@ -1236,24 +1236,24 @@ This optimizes for the common case of reading a JSON payload containing many dup
 
 **Tip**: This behaviour may be altered by supplying a different `:key-fn` to `ejson:parse` or `ejson:make-parser`.
 
-### `base-string` coercion
+******* `base-string` coercion
 
 When possible, strings will be coerced to `cl:simple-base-string`. This can lead to upwards of 1/4 memory usage per string on implementations like SBCL, which store `string`s internally as UTF32, while `base-string` can be represented in 8 bits per char.
 
-# Dependencies
+***** Dependencies
 
 * [closer-mop](https://github.com/pcostanza/closer-mop)
 * [flexi-streams](https://github.com/edicl/flexi-streams)
 * [float-features](https://github.com/Shinmera/float-features)
 * [uiop](https://gitlab.common-lisp.net/asdf/asdf)
 
-# License
+***** License
 
 See [LICENSE](LICENSE).
 
 ejson was originally a fork of [st-json](https://marijnhaverbeke.nl/st-json/), but I ended up scrapping all of the code except for for the function decoding Unicode.
 
-# Alternatives
+***** Alternatives
 
 There are many CL JSON libraries available, and I defer to Sabra Crolleton's definitive list and comparisons [https://sabracrolleton.github.io/json-review](https://sabracrolleton.github.io/json-review).
 
