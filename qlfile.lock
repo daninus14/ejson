@@ -1,0 +1,12 @@
+("quicklisp" .
+ (:class qlot/source/dist:source-dist
+  :initargs (:distribution "https://beta.quicklisp.org/dist/quicklisp.txt" :%version :latest)
+  :version "2024-10-12"))
+("log4cl" .
+ (:class qlot/source/github:source-github
+  :initargs (:repos "sharplispers/log4cl" :ref nil :branch nil :tag nil)
+  :version "github-fe3da517147d023029782ced7cd989ba24f1e62d"))
+("40ants-log4sly" .
+ (:class qlot/source/ultralisp:source-ultralisp
+  :initargs (:%version :latest)
+  :version "ultralisp-20250211155000"))

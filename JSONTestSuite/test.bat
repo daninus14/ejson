@@ -17,7 +17,7 @@
  --load "%~dp0json-test-suite-runner.lisp"^
  --eval "%RUN_EXP%"^
  --end-toplevel-options^
- "%~dp0bin\jzon-parsing.exe"^
+ "%~dp0bin\ejson-parsing.exe"^
  "%~dp0test_parsing"^
  %*
 @if %errorlevel% neq 0 exit /b %errorlevel%

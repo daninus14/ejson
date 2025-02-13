@@ -1,3 +1,6 @@
 *.fasl
 JSONTestSuite/bin/*.exe
 .qlot/
+*~
+.emacs*
+.aider*
