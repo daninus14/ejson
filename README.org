@@ -1,0 +1,218 @@
+#+TITLE: ejson
+
+#+AUTHOR:
+
+#+DATE:
+
+#+OPTIONS: toc:nil num:nil
+#+STARTUP: overview
+
+An extensible, correct and safe JSON [RFC 8259][JSONRFC] reader/writer.
+
+This is a fork of the [jzon](https://github.com/Zulu-Inuoe/jzon) project.
+
+It is a work in progress. However, since the changes in code are minimal, and it's mostly the docs that need to be updated, it can be used in production.
+
+We don't expect to make any breaking changes from ejson to jzon, at least if jzon stays on course.
+
+Mainly the changes we are adding are to:
+- Provide greater extensibility and flexibility of the system
+- Add some optional functionality lacking in jzon, but traditionally available in other json libraries like camel case to lisp case conversion
+- Add some convenience functionality systems to work well with other CL libraries based on the greater extensibility provided
+
+Please see the section [Motivation and Features](#motivation-and-features) for a set of motivations driving ejson and why you should consider it over the other hundred options available for JSON in CL.
+
+Please see the [changelog](CHANGELOG.md) for a list of changes between versions.
+
+[![Actions Status](https://github.com/Zulu-Inuoe/ejson/workflows/ci/badge.svg)](https://github.com/Zulu-Inuoe/ejson/actions)
+
+* Table of Contents
+* Quickstart
+    * Reading
+    * Writing
+    * Type Mappings
+* Usage
+    * ejson:parse
+        * ejson:span
+    * ejson:stringify
+        * Additional Types for Writing
+    * ejson:writer
+        * ejson:with-writer
+        * ejson:write-value
+        * Other Streaming Writer Functions
+        * Streaming Writer Example
+    * Custom Serialization
+        * standard-object
+        * Specializing ejson:coerced-fields
+        * Specializing ejson:write-value
+    * ejson:parser
+        * ejson:with-parser
+        * ejson:parse-next
+        * Streaming Parser Example
+* Motivation and Features
+    * Safety
+    * Correctness
+    * Convenience
+    * Performance
+* Dependencies
+* License
+* Alternatives
+
+
+# Quickstart
+
+ejson is on both Quicklisp and Ultralisp, and can be loaded via
+
+```org
+(ql:quickload '#:ejson)
+```
+
+Most users will simply use ejson:parse for reading, and ejson:stringify for writing. These mirror the JSON methods in JavaScript.
+
+**Note**: Examples in this README can be copy-pasted in your REPL if you've got a nickname set up for ejson. To follow along with the examples, use
+
+```org
+(uiop:add-package-local-nickname '#:ejson '#:ejson)
+```
+
+## Reading
+
+ejson:parse will parse JSON and produce a CL value
+
+```org
+(defparameter *ht* (ejson:parse "{
+  \"license\": null,
+  \"active\": false,
+  \"important\": true,
+  \"id\": 1,
+  \"xp\": 3.2,
+  \"name\": \"Rock\",
+  \"tags\":  [
+    \"alone\"
+  ]
+}"))
+
+(equalp 'null       (gethash "licence" *ht*))
+(equalp nil         (gethash "active" *ht*))
+(equalp t           (gethash "important" *ht*))
+(equalp 1           (gethash "id" *ht*))
+(equalp 3.2d0       (gethash "xp" *ht*))
+(equalp "Rock"      (gethash "name" *ht*))
+(equalp #("alone")  (gethash "tags" *ht*))
+```
+
+## Writing
+
+ejson:stringify will serialize a value to JSON:
+
+```org
+(ejson:stringify #(null nil t 42 3.14 "Hello, world!") :stream t :pretty t)
+```
+```org
+[
+  null,
+  false,
+  true,
+  42,
+  3.14,
+  "Hello, world!"
+ ]
+```
+
+## Type Mappings
+
+ejson cannonically maps types per the following chart:
+
+| JSON   | CL                      |
+|--------|-------------------------|
+| true   | symbol `t`              |
+| false  | symbol `nil`            |
+| null   | symbol `null`           |
+| number | integer or double-float |
+| string | simple-string           |
+| array  | simple-vector           |
+| object | hash-table (equal)      |
+
+**Note** the usage of symbol `cl:null` as a sentinel for JSON `null`
+
+When writing, additional values are supported. Please see the section ejson:stringify.
+
+# Usage
+
+As noted, ejson:parse and ejson:stringify suit most use-cases, this section goes into more detail, as well as an introduction to the ejson:writer interface.
+
+# ejson:parse
+
+# ejson:span
+
+# ejson:stringify
+
+# ejson:writer
+
+# ejson:make-writer
+
+# ejson:close-writer
+
+# ejson:with-writer
+
+# ejson:write-value
+
+# Other Streaming Writer Functions
+
+# Custom Serialization
+
+# ejson:parser
+
+# ejson:make-parser
+
+# ejson:close-parser
+
+# ejson:with-parser
+
+# ejson:parse-next
+
+# ejson:parse-next-element
+
+# Motivation and Features
+
+# Safety
+
+# Type Safety
+
+# Avoid Infinite Interning
+
+# Avoid Stack Exhaustion
+
+# Correctness
+
+# Unambiguous values
+
+# Compatible Float IO
+
+# Convenience
+
+# Performance
+
+# vs jsown
+
+# vs jonathan
+
+# Object key pooling
+
+# base-string coercion
+
+# Dependencies
+
+# License
+
+# Alternatives
+
+[JSONRFC]: https://tools.ietf.org/html/rfc8259
+[JSONTestSuite]: https://github.com/nst/JSONTestSuite
+[json-lines]: https://jsonlines.org/
+[jsown]: https://github.com/madnificent/jsown
+[cl-json]: https://cl-json.common-lisp.dev/cl-json.html
+[jonathan]: https://github.com/Rudolph-Miller/jonathan
+[json-streams]: https://github.com/rotatef/json-streams
+[shasht]: https://github.com/yitzchak/shasht
+[yason]: https://github.com/phmarek/yason
