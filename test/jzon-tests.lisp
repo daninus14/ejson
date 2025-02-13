@@ -1,4 +1,4 @@
-(defpackage #:com.inuoe.jzon-tests
+(defpackage #:ejson-tests
   (:use #:cl)
   (:import-from
    #:alexandria
@@ -15,7 +15,7 @@
    #:test)
   (:import-from #:flexi-streams)
   (:import-from
-   #:com.inuoe.jzon
+   #:ejson
    #:*writer*
    #:begin-array
    #:begin-array*
@@ -65,7 +65,7 @@
    #:run
    #:main))
 
-(in-package #:com.inuoe.jzon-tests)
+(in-package #:ejson-tests)
 
 (def-suite jzon
   :description "Tests for the jzon library.")
@@ -530,18 +530,18 @@
   (signals (json-parse-limit-error) (parse "\"This is a string that is too long\bwith some special codes \\u00f8\"" :max-string-length 5)))
 
 (test parse-reports-correct-position-when-encountering-control-char-in-string
-  (handler-case (parse (concatenate 'string "\"null:" (string (code-char 0)) "\""))
-    (json-parse-error (e) (is (= 7 (com.inuoe.jzon::%json-parse-error-column e))))))
+      (handler-case (parse (concatenate 'string "\"null:" (string (code-char 0)) "\""))
+        (json-parse-error (e) (is (= 7 (ejson::%json-parse-error-column e))))))
 
 (test parse-reports-correct-position-when-encountering-eof-in-string
-  (handler-case (parse "\"null:")
-    (json-eof-error (e)
-      (is (= 6 (com.inuoe.jzon::%json-parse-error-column e))))))
+      (handler-case (parse "\"null:")
+        (json-eof-error (e)
+          (is (= 6 (ejson::%json-parse-error-column e))))))
 
 (test parse-reports-correct-position-when-encountering-max-string-length-in-string
-  (handler-case (parse "\"null:" :max-string-length 2)
-    (json-parse-error (e)
-      (is (= 4 (com.inuoe.jzon::%json-parse-error-column e))))))
+      (handler-case (parse "\"null:" :max-string-length 2)
+        (json-parse-error (e)
+          (is (= 4 (ejson::%json-parse-error-column e))))))
 
 ;; TODO - pull this hardcode into a constant we can expose from jzon
 (test parse-max-string-length-accepts-nil-for-no-limit

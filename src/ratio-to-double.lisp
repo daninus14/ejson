@@ -11,12 +11,12 @@
 ;; eg: 4.9d-324 yields 0.0 on SBCL
 ;;
 
-(defpackage #:com.inuoe.jzon/ratio-to-double
+(defpackage #:ejson/ratio-to-double
   (:use #:cl)
   (:export
-    #:ratio-to-double))
+   #:ratio-to-double))
 
-(in-package #:com.inuoe.jzon/ratio-to-double)
+(in-package #:ejson/ratio-to-double)
 
 (defmacro %bits-double-float (x)
   #-ecl

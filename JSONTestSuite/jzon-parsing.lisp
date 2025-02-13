@@ -1,7 +1,7 @@
-(defpackage #:com.inuoe.jzon-parsing
+(defpackage #:ejson-parsing
   (:use #:cl)
   (:local-nicknames
-   (#:jzon #:com.inuoe.jzon))
+   (#:jzon #:ejson))
   (:import-from
    #:alexandria
    #:eswitch
@@ -15,7 +15,7 @@
   (:export
    #:main))
 
-(in-package #:com.inuoe.jzon-parsing)
+(in-package #:ejson-parsing)
 
 (defun parser-fn (name)
   (eswitch (name :test #'string-equal)

@@ -1,8 +1,8 @@
-(defpackage #:com.inuoe.jzon/eisel-lemire
+(defpackage #:ejson/eisel-lemire
   (:use #:cl)
   (:export #:make-double))
 
-(in-package #:com.inuoe.jzon/eisel-lemire)
+(in-package #:ejson/eisel-lemire)
 
 (defmacro %uint64 (integer)
   `(ldb (byte 64 0) ,integer))

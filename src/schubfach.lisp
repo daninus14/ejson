@@ -15,13 +15,13 @@
 ;;        5x the builtin writer on SBCL, with about 7x with (speed 3)
 ;;
 
-(defpackage #:com.inuoe.jzon/schubfach
+(defpackage #:ejson/schubfach
   (:use #:cl)
   (:export
-    #:write-float
-    #:write-double))
+   #:write-float
+   #:write-double))
 
-(in-package #:com.inuoe.jzon/schubfach)
+(in-package #:ejson/schubfach)
 
 (defmacro %int (size integer)
   (check-type size (integer 1))

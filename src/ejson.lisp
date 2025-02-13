@@ -1,4 +1,4 @@
-(defpackage #:com.inuoe.jzon
+(defpackage #:ejson
   (:use #:cl)
   (:export
    ;;; Read
@@ -80,7 +80,7 @@
   (:import-from #:float-features)
   (:import-from #:uiop))
 
-(in-package #:com.inuoe.jzon)
+(in-package #:ejson)
 
 (define-condition json-error (simple-error) ()
   (:documentation "Common error condition for all errors relating to reading/writing JSON."))
@@ -324,8 +324,8 @@ see `json-atom'"
                    (if (or (null c) (%ends-token-p c))
                      (let ((exp10 (+ exp10 (* exp-sign exp-val))))
                        (return  (values
-                                  (or (com.inuoe.jzon/eisel-lemire:make-double mantissa exp10 (minusp sign))
-                                      (com.inuoe.jzon/ratio-to-double:ratio-to-double (* mantissa (expt 10 exp10) sign)))
+                                  (or (ejson/eisel-lemire:make-double mantissa exp10 (minusp sign))
+                                      (ejson/ratio-to-double:ratio-to-double (* mantissa (expt 10 exp10) sign)))
                                   c)))
                      c))))
     (prog ((sign 1)
@@ -1187,17 +1187,17 @@ Example return value:
   (:method ((key float))
     (with-output-to-string (s)
       (macrolet ((#1=#:|| ()
-                  `(etypecase key
-                    (double-float (com.inuoe.jzon/schubfach:write-double key s))
-                    (single-float (com.inuoe.jzon/schubfach:write-float key s))
-                    ,@(unless (%type= 'short-float 'single-float)
-                      '((short-float (com.inuoe.jzon/schubfach:write-float (coerce key 'single-float) s))))
-                    ,@(unless (%type= 'long-float 'double-float)
-                      '((long-float (com.inuoe.jzon/schubfach:write-double (coerce key 'double-float) s)))))))
+                   `(etypecase key
+                      (double-float (ejson/schubfach:write-double key s))
+                      (single-float (ejson/schubfach:write-float key s))
+                      ,@(unless (%type= 'short-float 'single-float)
+                          '((short-float (ejson/schubfach:write-float (coerce key 'single-float) s))))
+                      ,@(unless (%type= 'long-float 'double-float)
+                          '((long-float (ejson/schubfach:write-double (coerce key 'double-float) s)))))))
         (#1#))))
   (:method ((key ratio))
     (with-output-to-string (s)
-      (com.inuoe.jzon/schubfach:write-double (com.inuoe.jzon/ratio-to-double:ratio-to-double key) s))))
+      (ejson/schubfach:write-double (ejson/ratio-to-double:ratio-to-double key) s))))
 
 (define-condition json-write-error (json-error) ()
   (:documentation "Error signalled when there is an issue during writing JSON."))
@@ -1550,7 +1550,7 @@ see `write-values'"
       ((eql nil)    (write-string "false" %stream))
       ((eql null)   (write-string "null" %stream))
       (integer      (format %stream "~D" value))
-      (double-float (com.inuoe.jzon/schubfach:write-double value %stream))
+      (double-float (ejson/schubfach:write-double value %stream))
       (string       (%write-json-string value %stream)))))
 
 (defgeneric write-value (writer value)
@@ -1575,14 +1575,14 @@ see `write-values'"
 
           (unwind-protect (progn
                             (if (and (null context) %replacer)
-                              (multiple-value-call
-                                  (lambda (write-p &optional (new-value value))
-                                    (when write-p
-                                      (if (eql value new-value)
-                                        (call-next-method writer value)
-                                        (call-next-method writer new-value))))
-                                (funcall %replacer nil value))
-                              (call-next-method writer value))
+                                (multiple-value-call
+                                    (lambda (write-p &optional (new-value value))
+                                      (when write-p
+                                        (if (eql value new-value)
+                                            (call-next-method writer value)
+                                            (call-next-method writer new-value))))
+                                  (funcall %replacer nil value))
+                                (call-next-method writer value))
                             (case context
                               (:array      (setf (car %stack) :array-value))
                               (:object-key (setf (car %stack) :object-value))
@@ -1624,13 +1624,13 @@ see `write-values'"
          (write-char #\, %stream)
          (%write-indentation writer)))
       (macrolet ((#1=#:|| ()
-                  `(etypecase value
-                    (double-float (com.inuoe.jzon/schubfach:write-double value %stream))
-                    (single-float (com.inuoe.jzon/schubfach:write-float value %stream))
-                    ,@(unless (%type= 'short-float 'single-float)
-                      '((short-float (com.inuoe.jzon/schubfach:write-float (coerce value 'single-float) %stream))))
-                    ,@(unless (%type= 'long-float 'double-float)
-                      '((long-float (com.inuoe.jzon/schubfach:write-double (coerce value 'double-float) %stream)))))))
+                   `(etypecase value
+                      (double-float (ejson/schubfach:write-double value %stream))
+                      (single-float (ejson/schubfach:write-float value %stream))
+                      ,@(unless (%type= 'short-float 'single-float)
+                          '((short-float (ejson/schubfach:write-float (coerce value 'single-float) %stream))))
+                      ,@(unless (%type= 'long-float 'double-float)
+                          '((long-float (ejson/schubfach:write-double (coerce value 'double-float) %stream)))))))
         (#1#))))
   (:method ((writer writer) (value string))
     (%write-json-atom writer value))
@@ -1641,37 +1641,37 @@ see `write-values'"
       (let ((replacer (slot-value writer '%replacer)))
         (map nil
              (if replacer
-               ;; Apply the replacer to each element in the sequence, with the index as its key
-               (let ((i 0))
+                 ;; Apply the replacer to each element in the sequence, with the index as its key
+                 (let ((i 0))
+                   (lambda (x)
+                     (multiple-value-call (lambda (write-p &optional (new-value nil value-changed-p))
+                                            (when write-p
+                                              (write-value writer (if value-changed-p new-value x))))
+                       (funcall replacer i x))
+                     (incf i)))
                  (lambda (x)
-                   (multiple-value-call (lambda (write-p &optional (new-value nil value-changed-p))
-                                          (when write-p
-                                            (write-value writer (if value-changed-p new-value x))))
-                     (funcall replacer i x))
-                   (incf i)))
-               (lambda (x)
-                 (write-value writer x)))
-              value))))
+                   (write-value writer x)))
+             value))))
 
   ;; object
   (:method ((writer writer) (value hash-table))
     (with-object writer
       (maphash (let ((replacer (slot-value writer '%replacer)))
                  (if replacer
-                   (lambda (key x)
-                     (multiple-value-call (lambda (write-p &optional (new-value nil value-changed-p))
-                                            (when write-p
-                                              (write-key writer key)
-                                              (write-value writer (if value-changed-p new-value x))))
+                     (lambda (key x)
+                       (multiple-value-call (lambda (write-p &optional (new-value nil value-changed-p))
+                                              (when write-p
+                                                (write-key writer key)
+                                                (write-value writer (if value-changed-p new-value x))))
                          (funcall replacer key x)))
-                   (lambda (key x)
-                     (write-key writer key)
-                     (write-value writer x))))
-             value)))
+                     (lambda (key x)
+                       (write-key writer key)
+                       (write-value writer x))))
+               value)))
 
   ;; Reals
   (:method ((writer writer) (value ratio))
-    (%write-json-atom writer (com.inuoe.jzon/ratio-to-double:ratio-to-double value)))
+    (%write-json-atom writer (ejson/ratio-to-double:ratio-to-double value)))
 
   ;;; Symbols
   (:method ((writer writer) (value symbol))
@@ -1689,22 +1689,22 @@ see `write-values'"
   (:method ((writer writer) (value array))
     (let ((dimensions (array-dimensions value)))
       (if (null dimensions)
-        (write-value writer (aref value))
-        (labels ((recurse (dimensions head tail)
-                   (if (null dimensions)
-                     (write-value writer (apply #'aref value head))
-                     (destructuring-bind (d . rest) dimensions
-                       (with-array writer
-                         (let ((cell (setf (cdr tail) (cons 0 nil))))
-                           (dotimes (i d)
-                             (setf (car cell) i)
-                             (recurse rest head cell))))))))
-          (destructuring-bind (d . rest) dimensions
-            (with-array writer
-              (let ((cell (cons 0 nil)))
-                (dotimes (i d)
-                  (setf (car cell) i)
-                  (recurse rest cell cell)))))))))
+          (write-value writer (aref value))
+          (labels ((recurse (dimensions head tail)
+                     (if (null dimensions)
+                         (write-value writer (apply #'aref value head))
+                         (destructuring-bind (d . rest) dimensions
+                           (with-array writer
+                             (let ((cell (setf (cdr tail) (cons 0 nil))))
+                               (dotimes (i d)
+                                 (setf (car cell) i)
+                                 (recurse rest head cell))))))))
+            (destructuring-bind (d . rest) dimensions
+              (with-array writer
+                (let ((cell (cons 0 nil)))
+                  (dotimes (i d)
+                    (setf (car cell) i)
+                    (recurse rest cell cell)))))))))
 
   ;;; Sequence support
   (:method ((writer writer) (value sequence))
@@ -1712,17 +1712,17 @@ see `write-values'"
       (let ((replacer (slot-value writer '%replacer)))
         (map nil
              (if replacer
-               ;; Apply the replacer to each element in the sequence, with the index as its key
-               (let ((i 0))
+                 ;; Apply the replacer to each element in the sequence, with the index as its key
+                 (let ((i 0))
+                   (lambda (x)
+                     (multiple-value-call (lambda (write-p &optional (new-value nil value-changed-p))
+                                            (when write-p
+                                              (write-value writer (if value-changed-p new-value x))))
+                       (funcall replacer i x))
+                     (incf i)))
                  (lambda (x)
-                   (multiple-value-call (lambda (write-p &optional (new-value nil value-changed-p))
-                                          (when write-p
-                                            (write-value writer (if value-changed-p new-value x))))
-                     (funcall replacer i x))
-                   (incf i)))
-               (lambda (x)
-                 (write-value writer x)))
-              value)))))
+                   (write-value writer x)))
+             value)))))
 
 ;;; Additional convenience functions/macros
 (defun write-values (writer &rest values)
