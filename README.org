@@ -7,7 +7,7 @@
 #+OPTIONS: toc:nil num:nil
 #+STARTUP: overview
 
-An extensible, correct and safe JSON [RFC 8259][JSONRFC] reader/writer.
+* An extensible, correct and safe JSON [RFC 8259][JSONRFC] reader/writer.
 
 This is a fork of the [jzon](https://github.com/Zulu-Inuoe/jzon) project.
 
@@ -20,9 +20,9 @@ Mainly the changes we are adding are to:
 - Add some optional functionality lacking in jzon, but traditionally available in other json libraries like camel case to lisp case conversion
 - Add some convenience functionality systems to work well with other CL libraries based on the greater extensibility provided
 
-Please see the section [Motivation and Features](#motivation-and-features) for a set of motivations driving ejson and why you should consider it over the other hundred options available for JSON in CL.
+Please see the section *Motivation and Features* for a set of motivations driving ejson and why you should consider it over the other hundred options available for JSON in CL.
 
-Please see the [changelog](CHANGELOG.md) for a list of changes between versions.
+Please see the *changelog* (CHANGELOG.md) for a list of changes between versions.
 
 [![Actions Status](https://github.com/Zulu-Inuoe/ejson/workflows/ci/badge.svg)](https://github.com/Zulu-Inuoe/ejson/actions)
 
@@ -59,27 +59,27 @@ Please see the [changelog](CHANGELOG.md) for a list of changes between versions.
 * Alternatives
 
 
-# Quickstart
+* Quickstart
 
 ejson is on both Quicklisp and Ultralisp, and can be loaded via
 
-```org
+#+BEGIN_SRC lisp
 (ql:quickload '#:ejson)
-```
+#+END_SRC
 
 Most users will simply use ejson:parse for reading, and ejson:stringify for writing. These mirror the JSON methods in JavaScript.
 
 **Note**: Examples in this README can be copy-pasted in your REPL if you've got a nickname set up for ejson. To follow along with the examples, use
 
-```org
+#+BEGIN_SRC lisp
 (uiop:add-package-local-nickname '#:ejson '#:ejson)
-```
+#+END_SRC
 
-## Reading
+**Reading**
 
 ejson:parse will parse JSON and produce a CL value
 
-```org
+#+BEGIN_SRC lisp
 (defparameter *ht* (ejson:parse "{
   \"license\": null,
   \"active\": false,
@@ -99,16 +99,17 @@ ejson:parse will parse JSON and produce a CL value
 (equalp 3.2d0       (gethash "xp" *ht*))
 (equalp "Rock"      (gethash "name" *ht*))
 (equalp #("alone")  (gethash "tags" *ht*))
-```
+#+END_SRC
 
-## Writing
+**Writing**
 
 ejson:stringify will serialize a value to JSON:
 
-```org
+#+BEGIN_SRC lisp
 (ejson:stringify #(null nil t 42 3.14 "Hello, world!") :stream t :pretty t)
-```
-```org
+#+END_SRC
+
+#+BEGIN_EXAMPLE
 [
   null,
   false,
@@ -117,9 +118,9 @@ ejson:stringify will serialize a value to JSON:
   3.14,
   "Hello, world!"
  ]
-```
+#+END_EXAMPLE
 
-## Type Mappings
+**Type Mappings**
 
 ejson cannonically maps types per the following chart:
 
@@ -137,75 +138,43 @@ ejson cannonically maps types per the following chart:
 
 When writing, additional values are supported. Please see the section ejson:stringify.
 
-# Usage
+* Usage
 
 As noted, ejson:parse and ejson:stringify suit most use-cases, this section goes into more detail, as well as an introduction to the ejson:writer interface.
 
-# ejson:parse
+* Motivation and Features
 
-# ejson:span
+* Safety
 
-# ejson:stringify
+* Type Safety
 
-# ejson:writer
+* Avoid Infinite Interning
 
-# ejson:make-writer
+* Avoid Stack Exhaustion
 
-# ejson:close-writer
+* Correctness
 
-# ejson:with-writer
+* Unambiguous values
 
-# ejson:write-value
+* Compatible Float IO
 
-# Other Streaming Writer Functions
+* Convenience
 
-# Custom Serialization
+* Performance
 
-# ejson:parser
+* vs jsown
 
-# ejson:make-parser
+* vs jonathan
 
-# ejson:close-parser
+* Object key pooling
 
-# ejson:with-parser
+* base-string coercion
 
-# ejson:parse-next
+* Dependencies
 
-# ejson:parse-next-element
+* License
 
-# Motivation and Features
-
-# Safety
-
-# Type Safety
-
-# Avoid Infinite Interning
-
-# Avoid Stack Exhaustion
-
-# Correctness
-
-# Unambiguous values
-
-# Compatible Float IO
-
-# Convenience
-
-# Performance
-
-# vs jsown
-
-# vs jonathan
-
-# Object key pooling
-
-# base-string coercion
-
-# Dependencies
-
-# License
-
-# Alternatives
+* Alternatives
 
 [JSONRFC]: https://tools.ietf.org/html/rfc8259
 [JSONTestSuite]: https://github.com/nst/JSONTestSuite
