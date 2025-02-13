@@ -1,6 +1,17 @@
-# jzon
+# ejson 
 
-A correct and safe(er) JSON [RFC 8259][JSONRFC] reader/writer with sane defaults.
+An extensible, correct and safe JSON [RFC 8259][JSONRFC] reader/writer.
+
+This is a fork of the [jzon](https://github.com/Zulu-Inuoe/jzon) project.
+
+it is a work in progress. However, since the changes in code are minimal, and it's mostly the docs that need to be updated, it can be used in production.
+
+We don't expect to make any breaking changes to jzon, at least if they stay on course.
+
+Mainly the changes we are adding are to:
+- Provide greater extensibility and flexibility of the system
+- Add some optional functionality lacking in jzon, but traditionally available in other json libraries
+- Add some convenience functionality systems to work well with other CL libraries based on the greater extensibility provided
 
 Please see the section [Motivation and Features](#motivation-and-features) for a set of motivations driving jzon and why you should consider it over the other hundred options available for JSON in CL.
 
