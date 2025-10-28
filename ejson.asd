@@ -9,7 +9,8 @@
                #:trivial-gray-streams
                #:uiop)
   ;; :in-order-to ((test-op (test-op "ejson-tests")))
-  :components ((:file "eisel-lemire")
-               (:file "ratio-to-double")
-               (:file "schubfach")
-               (:file "ejson" :depends-on ("eisel-lemire" "ratio-to-double" "schubfach"))))
+  :components ((:module "src"
+                :components ((:file "eisel-lemire")
+                             (:file "ratio-to-double")
+                             (:file "schubfach")
+                             (:file "ejson" :depends-on ("eisel-lemire" "ratio-to-double" "schubfach"))))))
