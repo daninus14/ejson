@@ -1,11 +1,5 @@
 (in-package :ejson)
 
-(defvar *serialize-lisp-case-to-camel-case* nil)
-(defvar *deserialize-camel-case-to-lisp-case* nil)
-;; (defvar original-parse (symbol-function 'ejson:parse))
-(defvar original-parse (fdefinition 'ejson:parse))
-
-
 (defun check-prefix (l special-words)
   "From CFFI https://github.com/cffi/cffi/blob/22762bf8d2febac519733b8242963707c46b3148/src/functions.lisp#L271"
   (let ((pl (loop for i from (1- (length l)) downto 0
@@ -68,17 +62,6 @@
                            (e (first e))
                            (t (string-capitalize str)))))))
 
-;; Enabling Lisp Case to Camel Case conversion 
-(defmethod ejson:coerced-fields ((obj standard-object))
-  (if *serialize-lisp-case-to-camel-case*
-      (let* (;; Call the base method which grabs all bound slots 
-             (fields (ejson::%coerced-fields-slots obj)))
-        ;; Alter them by replacing the name part (the `car')
-        (mapcar
-         (lambda (f) (cons (translate-camelcase-name (car f)) (cdr f)))
-         fields))
-      (ejson::%coerced-fields-slots obj)))
-
 (defun parse-to-lisp-case (in &key
                                 (max-depth 128)
                                 (allow-comments nil)
@@ -106,56 +89,5 @@
                    :max-string-length max-string-length
                    :key-fn key-fn)))
 
-;; (let ((original-parse #'ejson:parse))
-;;   (defun ejson:parse (in &key
-;;                                     (max-depth 128)
-;;                                     (allow-comments nil)
-;;                                     (allow-trailing-comma nil)
-;;                                     (allow-multiple-content nil)
-;;                                     (max-string-length (min #x100000 (1- array-dimension-limit)))
-;;                                     (key-fn t))
-;;     (if *deserialize-camel-case-to-lisp-case*
-;;         (let ((new-key-fn (if (functionp key-fn)
-;;                               (lambda (x) (funcall key-fn (camel-case-to-lisp x)))
-;;                               #'camel-case-to-lisp)))
-;;           (funcall original-parse in
-;;                    :max-depth max-depth
-;;                    :allow-comments allow-comments
-;;                    :allow-trailing-comma allow-trailing-comma
-;;                    :allow-multiple-content allow-multiple-content
-;;                    :max-string-length max-string-length
-;;                    :key-fn new-key-fn))
-;;         (funcall original-parse in
-;;                  :max-depth max-depth
-;;                  :allow-comments allow-comments
-;;                  :allow-trailing-comma allow-trailing-comma
-;;                  :allow-multiple-content allow-multiple-content
-;;                  :max-string-length max-string-length
-;;                  :key-fn key-fn))))
 
-(defun ejson:parse (in &key
-                         (max-depth 128)
-                         (allow-comments nil)
-                         (allow-trailing-comma nil)
-                         (allow-multiple-content nil)
-                         (max-string-length (min #x100000 (1- array-dimension-limit)))
-                         (key-fn t))
-  (if *deserialize-camel-case-to-lisp-case*
-      (let ((new-key-fn (if (functionp key-fn)
-                            (lambda (x) (funcall key-fn (camel-case-to-lisp x)))
-                            #'camel-case-to-lisp)))
-        (funcall original-parse in
-                 :max-depth max-depth
-                 :allow-comments allow-comments
-                 :allow-trailing-comma allow-trailing-comma
-                 :allow-multiple-content allow-multiple-content
-                 :max-string-length max-string-length
-                 :key-fn new-key-fn))
-      (funcall original-parse in
-               :max-depth max-depth
-               :allow-comments allow-comments
-               :allow-trailing-comma allow-trailing-comma
-               :allow-multiple-content allow-multiple-content
-               :max-string-length max-string-length
-               :key-fn key-fn)))
 

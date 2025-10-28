@@ -1,86 +1,7 @@
-(defpackage #:ejson
-  (:use #:cl)
-  (:export
-   ;;; Read
-   #:parse
+(in-package :ejson)
 
-   ;;;; Streaming reader
-   #:parser
-   #:make-parser
-   #:parse-next
-   #:parse-next-element
-   #:close-parser
-   #:with-parser
-
-   ;; Reading utils
-   #:span
-
-   ;;; Write
-   #:stringify
-
-   ;;; Types
-   #:json-atom
-   #:json-element
-
-   ;;; Conditions
-   #:json-error
-   #:json-limit-error
-   #:json-parse-error
-   #:json-parse-limit-error
-   #:json-eof-error
-   #:json-write-error
-   #:json-write-limit-error
-   #:json-recursive-write-error
-
-   ;;; Simple extensible writing
-   #:coerced-fields
-   #:coerce-key
-
-   ;;; Streaming Writer
-   #:writer
-   #:make-writer
-   #:close-writer
-   #:with-writer
-
-   ;; Extensible serialization
-   #:write-value
-
-   #:begin-array
-   #:write-values
-   #:end-array
-   #:with-array
-   #:write-array
-
-   ;; Writer operations
-   #:begin-object
-   #:write-key
-   #:write-properties
-   #:end-object
-   #:with-object
-   #:write-object
-
-   ;; Dynavar interface to the writer
-   #:*writer*
-   #:with-writer*
-   #:write-value*
-   #:begin-array*
-   #:write-values*
-   #:end-array*
-   #:with-array*
-   #:write-array*
-   #:begin-object*
-   #:write-key*
-   #:write-property*
-   #:write-properties*
-   #:end-object*
-   #:with-object*
-   #:write-object*)
-  (:import-from #:closer-mop)
-  (:import-from #:flexi-streams)
-  (:import-from #:float-features)
-  (:import-from #:uiop))
-
-(in-package #:ejson)
+(defvar *serialize-lisp-case-to-camel-case* nil)
+(defvar *deserialize-camel-case-to-lisp-case* nil)
 
 (define-condition json-error (simple-error) ()
   (:documentation "Common error condition for all errors relating to reading/writing JSON."))
@@ -1125,6 +1046,18 @@ see `close-parser'"
          (declare (dynamic-extent %step %read-string %pos))
          (%parse %step %read-string %pos key-fn max-depth (and allow-comments t) (and allow-trailing-comma t) (and allow-multiple-content t)))))))
 
+(defgeneric get-slots-to-encode (class element)
+  (:documentation "This function is used to get the slots to be json encoded. The class is the first parameter in order to allow for extending the dispatch based on the metaclass of the object."))
+
+(defmethod get-slots-to-encode (class element)  
+  (remove-if-not (lambda (s) (slot-boundp element (c2mop:slot-definition-name s)))
+                 (c2mop:class-slots class)))
+
+(defun satisfy-case (key)
+  (if *serialize-lisp-case-to-camel-case*
+      (lisp-to-camel-case key)
+      key))
+
 (defgeneric %coerced-fields-slots (element))
 
 (defmethod %coerced-fields-slots (element)
@@ -1136,13 +1069,6 @@ see `close-parser'"
                       (slot-value element slot-name)
                       (c2mop:slot-definition-type s))))
             (get-slots-to-encode class element))))
-
-(defgeneric get-slots-to-encode (class element)
-  (:documentation "This function is used to get the slots to be json encoded. The class is the first parameter in order to allow for extending the dispatch based on the metaclass of the object."))
-
-(defmethod get-slots-to-encode (class element)  
-  (remove-if-not (lambda (s) (slot-boundp element (c2mop:slot-definition-name s)))
-                 (c2mop:class-slots class)))
 
 (defgeneric coerced-fields (element)
   (:documentation "Return a list of key definitions for `element'.
@@ -1442,7 +1368,7 @@ see `with-object'"
     (let ((key-str (funcall %coerce-key key)))
       (unless (typep key-str '(or string character (and (not null) symbol)))
         (error "Invalid key after coercion: '~A' -> '~A'" key key-str))
-      (%write-json-string (string key-str) %stream))
+      (%write-json-string (string (satisfy-case key-str)) %stream))
     (write-char #\: %stream)
     (when %pretty
       (write-char #\Space %stream)))

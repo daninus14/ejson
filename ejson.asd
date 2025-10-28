@@ -10,7 +10,10 @@
                #:uiop)
   ;; :in-order-to ((test-op (test-op "ejson-tests")))
   :components ((:module "src"
-                :components ((:file "eisel-lemire")
+                :components ((:file "packages")
+                             (:file "eisel-lemire")
                              (:file "ratio-to-double")
                              (:file "schubfach")
-                             (:file "ejson" :depends-on ("eisel-lemire" "ratio-to-double" "schubfach"))))))
+                             (:file "camel-case" :depends-on "packages")
+                             (:file "case-from-cljson" :depends-on "packages")
+                             (:file "ejson" :depends-on ("packages" "eisel-lemire" "ratio-to-double" "schubfach"))))))
