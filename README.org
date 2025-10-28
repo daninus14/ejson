@@ -1,47 +1,36 @@
-* ejson 
+# jzon
 
-An extensible, correct and safe JSON [RFC 8259][JSONRFC] reader/writer.
+A correct and safe(er) JSON [RFC 8259][JSONRFC] reader/writer with sane defaults.
 
-This is a fork of the [jzon](https://github.com/Zulu-Inuoe/jzon) project.
-
-It is a work in progress. However, since the changes in code are minimal, and it's mostly the docs that need to be updated, it can be used in production.
-
-We don't expect to make any breaking changes from ejson to jzon, at least if jzon stays on course.
-
-Mainly the changes we are adding are to:
-- Provide greater extensibility and flexibility of the system
-- Add some optional functionality lacking in jzon, but traditionally available in other json libraries like camel case to lisp case conversion
-- Add some convenience functionality systems to work well with other CL libraries based on the greater extensibility provided
-
-Please see the section [Motivation and Features](#motivation-and-features) for a set of motivations driving ejson and why you should consider it over the other hundred options available for JSON in CL.
+Please see the section [Motivation and Features](#motivation-and-features) for a set of motivations driving jzon and why you should consider it over the other hundred options available for JSON in CL.
 
 Please see the [changelog](CHANGELOG.md) for a list of changes between versions.
 
-[![Actions Status](https://github.com/Zulu-Inuoe/ejson/workflows/ci/badge.svg)](https://github.com/Zulu-Inuoe/ejson/actions)
+[![Actions Status](https://github.com/Zulu-Inuoe/jzon/workflows/ci/badge.svg)](https://github.com/Zulu-Inuoe/jzon/actions)
 
-**** Table of Contents
+#### Table of Contents
 
 * [Quickstart](#quickstart) 
   * [Reading](#reading)
   * [Writing](#writing)
   * [Type Mappings](#type-mappings)
 * [Usage](#usage)
-  * [`ejson:parse`](#ejsonparse)
-    * [`ejson:span`](#ejsonspan)
-  * [`ejson:stringify`](#ejsonstringify)
+  * [`jzon:parse`](#jzonparse)
+    * [`jzon:span`](#jzonspan)
+  * [`jzon:stringify`](#jzonstringify)
     * [Additional Types for Writing](#additionally-supported-types-for-writing)
-  * [`ejson:writer`](#ejsonwriter)
-    * [`ejson:with-writer`](#ejsonwith-writer)
-    * [`ejson:write-value`](#ejsonwrite-value)
+  * [`jzon:writer`](#jzonwriter)
+    * [`jzon:with-writer`](#jzonwith-writer)
+    * [`jzon:write-value`](#jzonwrite-value)
     * [Other Streaming Writer Functions](#other-streaming-writer-functions)
     * [Streaming Writer Example](#streaming-writer-example)
   * [Custom Serialization](#custom-serialization)
     * [standard-object](#standard-object)
-    * [Specializing `ejson:coerced-fields`](#specializing-coerced-fields)
-    * [Specializing `ejson:write-value`](#specializing-ejsonwrite-value)
-  * [`ejson:parser`](#ejsonparser)
-    * [`ejson:with-parser`](#ejsonwith-parser)
-    * [`ejson:parse-next`](#ejsonparse-next)
+    * [Specializing `jzon:coerced-fields`](#specializing-coerced-fields)
+    * [Specializing `jzon:write-value`](#specializing-jzonwrite-value)
+  * [`jzon:parser`](#jzonparser)
+    * [`jzon:with-parser`](#jzonwith-parser)
+    * [`jzon:parse-next`](#jzonparse-next)
     * [Streaming Parser Example](#streaming-parser-example)
 * [Motivation and Features](#motivation-and-features)
   * [Safety](#safety)
@@ -54,26 +43,36 @@ Please see the [changelog](CHANGELOG.md) for a list of changes between versions.
 
 # Quickstart
 
-ejson is on both Quicklisp and Ultralisp, and can be loaded via
+jzon is on both Quicklisp and Ultralisp, and can be loaded via
 
 ```lisp
-(ql:quickload '#:ejson)
+(ql:quickload '#:com.inuoe.jzon)
 ```
 
-Most users will simply use [`ejson:parse`](#ejsonparse) for reading, and [`ejson:stringify`](#ejsonstringify) for writing. These mirror the [JSON methods in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON).
+Most users will simply use [`jzon:parse`](#jzonparse) for reading, and [`jzon:stringify`](#jzonstringify) for writing. These mirror the [JSON methods in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON).
 
-**Note**: Examples in this README can be copy-pasted in your REPL if you've got a nickname set up for ejson. To follow along with the examples, use
+**Note**: Examples in this README can be copy-pasted in your REPL if you've got a nickname set up for jzon. To follow along with the examples, add a local nickname depending to your common lisp implementation:
+
+#### SBCL
 
 ```lisp
-(uiop:add-package-local-nickname '#:ejson '#:ejson)
+(sb-ext:add-package-local-nickname '#:jzon '#:com.inuoe.jzon)
 ```
 
-*** Reading
+#### Other
 
-[`ejson:parse`](#ejsonparse) will parse JSON and produce a CL value
+If you have an up to date version of `uiop` installed:
 
 ```lisp
-(defparameter *ht* (ejson:parse "{
+(uiop:add-package-local-nickname '#:jzon '#:com.inuoe.jzon)
+```
+
+### Reading
+
+[`jzon:parse`](#jzonparse) will parse JSON and produce a CL value
+
+```lisp
+(defparameter *ht* (jzon:parse "{
   \"license\": null,
   \"active\": false,
   \"important\": true,
@@ -94,12 +93,12 @@ Most users will simply use [`ejson:parse`](#ejsonparse) for reading, and [`ejson
 (equalp #("alone")  (gethash "tags" *ht*))
 ```
 
-*** Writing
+### Writing
 
-[`ejson:stringify`](#ejsonstringify) will serialize a value to JSON:
+[`jzon:stringify`](#jzonstringify) will serialize a value to JSON:
 
 ```lisp
-(ejson:stringify #(null nil t 42 3.14 "Hello, world!") :stream t :pretty t)
+(jzon:stringify #(null nil t 42 3.14 "Hello, world!") :stream t :pretty t)
 ```
 ```json
 [
@@ -112,9 +111,9 @@ Most users will simply use [`ejson:parse`](#ejsonparse) for reading, and [`ejson
  ]
 ```
 
-*** Type Mappings
+### Type Mappings
 
-ejson cannonically maps types per the following chart:
+jzon cannonically maps types per the following chart:
 
 | JSON   | CL                      |
 |--------|-------------------------|
@@ -128,19 +127,19 @@ ejson cannonically maps types per the following chart:
 
 **Note** the usage of symbol `cl:null` as a sentinel for JSON `null`
 
-When writing, additional values are supported. Please see the section [ejson:stringify](#writing).
+When writing, additional values are supported. Please see the section [jzon:stringify](#jzonstringify).
 
 # Usage
 
-As noted, [`ejson:parse`](#ejsonparse) and [`ejson:stringify`](#ejsonstringify) suit most use-cases, this section goes into more detail, as well as an introduction to the [`ejson:writer` interface](#ejsonwriter).
+As noted, [`jzon:parse`](#jzonparse) and [`jzon:stringify`](#jzonstringify) suit most use-cases, this section goes into more detail, as well as an introduction to the [`jzon:writer` interface](#jzonwriter).
 
-*** ejson:parse
+### jzon:parse
 
-*Function* **ejson:parse** *in &key max-depth allow-comments allow-trailing-comma allow-multiple-content max-string-length key-fn*
+*Function* **jzon:parse** *in &key max-depth allow-comments allow-trailing-comma allow-multiple-content max-string-length key-fn*
 
 *=> value* 
 
-* *in* - a `string`, `vector (unsigned-byte 8)`, `stream`, `pathname`, or [`ejson:span`](#ejsonspan)
+* *in* - a `string`, `vector (unsigned-byte 8)`, `stream`, `pathname`, or [`jzon:span`](#jzonspan)
 * *max-depth* - a positive `integer`, or a boolean
 * *allow-comments* - a `boolean`
 * *allow-trailing-comma* - a `boolean`
@@ -148,19 +147,19 @@ As noted, [`ejson:parse`](#ejsonparse) and [`ejson:stringify`](#ejsonstringify) 
 * *max-string-length* - `nil`, `t`, or a positive `integer`
 * *key-fn* - a designator for a function of one argument, or a boolean
 
-*value* - a `ejson:json-element` (see [Type Mappings](#type-mappings))
+*value* - a `jzon:json-element` (see [Type Mappings](#type-mappings))
 
-**** Description
+#### Description
 
-Reads JSON from `in` and returns a `ejson:json-element` per [Type Mappings](#type-mappings).
+Reads JSON from `in` and returns a `jzon:json-element` per [Type Mappings](#type-mappings).
 
 `in` can be any of the following types:
 
 * string
 * (vector (unsigned-byte 8)) - octets in utf-8
 * stream - character or binary in utf-8
-* pathname - `ejson:parse` will open the file for reading in utf-8
-* [`ejson:span`](#ejsonspan) - denoting a part of a string/vector
+* pathname - `jzon:parse` will open the file for reading in utf-8
+* [`jzon:span`](#jzonspan) - denoting a part of a string/vector
 
 **Tip:** *You can also use a displaced array to denote a region of an array without copying it.*
 
@@ -177,41 +176,41 @@ The keyword arguments control optional features when reading:
 * `nil` - No limit barring `array-dimension-limit`
 * `t` - Default limit
 
-When either *max-depth* or *max-string-length* is exceeded, `ejson:parse` shall signal a `ejson:json-parse-limit-error` error.
+When either *max-depth* or *max-string-length* is exceeded, `jzon:parse` shall signal a `jzon:json-parse-limit-error` error.
 
-***** =*allow-multiple-content*=
+##### *allow-multiple-content*
 
-JSON requires there  be only one toplevel element. Using *allow-multiple-content* tells `ejson:parse` to stop after reading one full toplevel element:
+JSON requires there  be only one toplevel element. Using *allow-multiple-content* tells `jzon:parse` to stop after reading one full toplevel element:
 
 ```lisp
-(ejson:parse "1 2 3" :allow-multiple-content t) #| => 1 |#
+(jzon:parse "1 2 3" :allow-multiple-content t) #| => 1 |#
 ```
 
-When reading a stream we can call [`ejson:parse`](#ejsonparse) several times:
+When reading a stream we can call [`jzon:parse`](#jzonparse) several times:
 
 ```lisp
 (with-input-from-string (s "1 2 3")
-  (ejson:parse s :allow-multiple-content t)  #| => 1 |#
-  (ejson:parse s :allow-multiple-content t)  #| => 2 |#
-  (ejson:parse s :allow-multiple-content t)) #| => 3 |#
+  (jzon:parse s :allow-multiple-content t)  #| => 1 |#
+  (jzon:parse s :allow-multiple-content t)  #| => 2 |#
+  (jzon:parse s :allow-multiple-content t)) #| => 3 |#
 ```
 
-:warning: When reading numbers, `null`, `false`, or `true`, they **must** be followed by whitespace. [`ejson:parse`](#ejsonparse) shall signal an error otherwise:
+:warning: When reading numbers, `null`, `false`, or `true`, they **must** be followed by whitespace. [`jzon:parse`](#jzonparse) shall signal an error otherwise:
 
 ```lisp
-(ejson:parse "123[1, 2, 3]" :allow-multiple-content t) #| error |#
+(jzon:parse "123[1, 2, 3]" :allow-multiple-content t) #| error |#
 ```
 
 This is to prevent errors caused by the lookahead necessary for parsing non-delimited tokens.
 
-This is not required when using [`ejson:parse-next`](#ejsonparse-next).
+This is not required when using [`jzon:parse-next`](#jzonparse-next).
 
-***** *key-fn*
+##### *key-fn*
 
 When parsing objects, *key-fn* is called on each of that object's keys (`simple-string`):
 
 ```lisp
-(ejson:parse "{ \"x\": 0, \"y\": 1 }" :key-fn #'print)
+(jzon:parse "{ \"x\": 0, \"y\": 1 }" :key-fn #'print)
 "x"
 "y"
 #| #<HASH-TABLE :TEST EQUAL :COUNT 2 {1006942E83}> |#
@@ -222,7 +221,7 @@ the role of *key-fn* is to allow the user to control how keys end up as hash tab
 As an example, `alexandria:make-keyword` can be used to make object keys into keywords:
 
 ```lisp
-(ejson:parse "[ { \"x\": 1, \"y\": 2 }, { \"x\": 3, \"y\": 4 } ]" :key-fn #'alexandria:make-keyword)
+(jzon:parse "[ { \"x\": 1, \"y\": 2 }, { \"x\": 3, \"y\": 4 } ]" :key-fn #'alexandria:make-keyword)
 
 (defparameter *v* *)
 
@@ -233,7 +232,7 @@ As an example, `alexandria:make-keyword` can be used to make object keys into ke
 Pass `nil` to *key-fn* in order to avoid [key pooling](#object-key-pooling):
 
 ```lisp
-(ejson:parse "[ { \"x\": 1, \"y\": 2 }, { \"x\": 3, \"y\": 4 } ]" :key-fn nil)
+(jzon:parse "[ { \"x\": 1, \"y\": 2 }, { \"x\": 3, \"y\": 4 } ]" :key-fn nil)
 
 (defparameter *v* *)
 
@@ -245,9 +244,9 @@ This *may* help speed up parsing on highly heterogeneous JSON.
 
 **Note**: It is recommended leave this as default. The performance improvement is usually not substantive enough to warrant duplicated strings, and interning strings from untrusted JSON is a security risk.
 
-*** ejson:span
+### jzon:span
 
-*Function* **ejson:span** *in* *&key start end*
+*Function* **jzon:span** *in* *&key start end*
 
 *=> span*
 
@@ -256,26 +255,26 @@ This *may* help speed up parsing on highly heterogeneous JSON.
 
 *span* a span object representing the range.
 
-**** Description
+#### Description
 
-Create a span to be used in [`ejson:parse`](#ejsonparse), or [`ejson:make-parser`](#ejsonparser) in order to specify a bounded *start* and *end* for a string, stream or vector.
+Create a span to be used in [`jzon:parse`](#jzonparse), or [`jzon:make-parser`](#jzonparser) in order to specify a bounded *start* and *end* for a string, stream or vector.
 
 NOTE: For streams, only input streams are allowed.
 
-***** Example
+##### Example
 
 ```lisp
-(ejson:parse (ejson:span "garbage42moregarbage" :start 7 :end 9)) 
+(jzon:parse (jzon:span "garbage42moregarbage" :start 7 :end 9)) 
 #| => 42 |#
 ```
 
-*** ejson:stringify
+### jzon:stringify
 
-*Function* **ejson:stringify** *value* *&key stream pretty coerce-key replacer*
+*Function* **jzon:stringify** *value* *&key stream pretty coerce-key replacer*
 
 *=> result*
 
-* *value* - a `ejson:json-element`, or other value (see below)
+* *value* - a `jzon:json-element`, or other value (see below)
 * *stream* - a destination like in `format`, or a `pathname`
 * *pretty* - a boolean
 * *replacer* - a function of two arguments (see below)
@@ -284,7 +283,7 @@ NOTE: For streams, only input streams are allowed.
 
 *result* - nil, or a string
 
-**** Description
+#### Description
 
 Serializes *value* to JSON and writes it to *stream*.
 
@@ -292,7 +291,7 @@ If *pretty* is true, the output is formatted with spaces and newlines.
 
 *max-depth* limits the depth of nesting arrays/objects. Use `nil` to disable it, or `t` to set to default.
 
-In addition to serializing `ejson:json-element` values per [Type Mappings](#type-mappings), `ejson:stringify` allows other values. 
+In addition to serializing `jzon:json-element` values per [Type Mappings](#type-mappings), `jzon:stringify` allows other values. 
 See [Additionally Supported Types For Writing](#additionally-supported-types-for-writing) and [Custom Serialization](#custom-serialization).
 
 *max-string-length* may be an integer denoting the limit, or
@@ -300,9 +299,9 @@ See [Additionally Supported Types For Writing](#additionally-supported-types-for
 * `nil` - No limit barring `array-dimension-limit`
 * `t` - Default limit
 
-When either *max-depth* is exceeded, [`ejson:stringify`](#ejsonstringify) shall signal a `ejson:json-write-limit-error` error.
+When either *max-depth* is exceeded, [`jzon:stringify`](#jzonstringify) shall signal a `jzon:json-write-limit-error` error.
 
-***** stream
+##### stream
 
 *stream* is a destination as in `format`, or a `pathname`:
 
@@ -312,18 +311,18 @@ When either *max-depth* is exceeded, [`ejson:stringify`](#ejsonstringify) shall 
 * a `string` with a fill-pointer - writes to that string as `with-output-to-string`
 * a `pathname` - Must designate a file. Creates or supersedes a new file and writes to it
 
-***** coerce-key
+##### coerce-key
 
 A function for coercing keys to strings. See [Custom Serialization](#custom-serialization).
 
-***** replacer
+##### replacer
 
 A designator for a 'replacer' function as outlined in the JavaScript [JSON.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) method.
 
 However, due to the lack of `undefined` in CL, we make use of multiple return values to indicate replacement.
 
 ```lisp
-(ejson:stringify #("first" "second" "third")
+(jzon:stringify #("first" "second" "third")
                 :stream t :pretty t
                 :replacer (lambda (key value)
                             (case key
@@ -343,7 +342,7 @@ However, due to the lack of `undefined` in CL, we make use of multiple return va
 ]
 ```
 
-**** Additionally Supported Types For Writing
+#### Additionally Supported Types For Writing
 
 When writing, the following type mappings are also available:
 
@@ -364,9 +363,9 @@ When writing, the following type mappings are also available:
 
 If you have an alist/plist you wish to write, we recommend the use of either `alexandria:alist-hash-table` or `alexandria:plist-hash-table`, or use one of the methods in [Custom Serialization](#custom-serialization).
 
-Previously, ejson attempted to detect alists/plists, but this was error-prone and came with many edge-cases.
+Previously, jzon attempted to detect alists/plists, but this was error-prone and came with many edge-cases.
 
-***** Symbol key case
+##### Symbol key case
 
 By default, when a symbol represents a **key** in a JSON object, its name will be downcased, unless it contains mixed-case characters.
 
@@ -378,7 +377,7 @@ For example:
   (setf (gethash '|noChange| ht) '|when used|)
   (setf (gethash "AS A" ht) '|value|)
 
-  (ejson:stringify ht :pretty t :stream t))
+  (jzon:stringify ht :pretty t :stream t))
 ```
 ``` json
 {
@@ -390,30 +389,30 @@ For example:
 
 Please see [Custom Serialization](#custom-serialization) and [write-value](#write-value) for more details.
 
-*** ejson:writer
+### jzon:writer
 
-A second way of writing JSON is to use the `ejson:writer` API, which allows you to fully control the values, order, and types, including arbitrary logic.
+A second way of writing JSON is to use the `jzon:writer` API, which allows you to fully control the values, order, and types, including arbitrary logic.
 
 An example to start:
 
 ```lisp
-(ejson:with-writer* (:stream *standard-output* :pretty t)
-  (ejson:with-object*
-    (ejson:write-key* :age)
-    (ejson:write-value* 24)
+(jzon:with-writer* (:stream *standard-output* :pretty t)
+  (jzon:with-object*
+    (jzon:write-key* :age)
+    (jzon:write-value* 24)
     
-    (ejson:write-property* :colour :blue)
+    (jzon:write-property* :colour :blue)
     
-    (ejson:write-properties* :outside nil
+    (jzon:write-properties* :outside nil
                             :interests #()
                             :talent 'null)
 
-    (ejson:write-key* "an-array")
-    (ejson:with-array*
-      (ejson:write-values* :these :are :elements))
+    (jzon:write-key* "an-array")
+    (jzon:with-array*
+      (jzon:write-values* :these :are :elements))
 
-    (ejson:write-key* "another array")
-    (ejson:write-array* :or "you" "can use this")))
+    (jzon:write-key* "another array")
+    (jzon:write-array* :or "you" "can use this")))
 ```
 ```json
 {
@@ -435,13 +434,13 @@ An example to start:
 }
 ```
 
-[`ejson:make-writer`](#ejsonmake-writer) and [`ejson:with-writer*`](#ejsonwith-writer) accept the same arguments as [`ejson:stringify`](#ejsonstringify).
+[`jzon:make-writer`](#jzonmake-writer) and [`jzon:with-writer*`](#jzonwith-writer) accept the same arguments as [`jzon:stringify`](#jzonstringify).
 
-**Note** All writer-related functions are duplicated in ones suffixed with `*` which use the `ejson:*writer*` special variable, and ones lacking the suffix, where the writer is the first argument.
+**Note** All writer-related functions are duplicated in ones suffixed with `*` which use the `jzon:*writer*` special variable, and ones lacking the suffix, where the writer is the first argument.
 
 For example, these two are equivalent:
 ```lisp
-(ejson:with-writer* ()
+(jzon:with-writer* ()
   (write-value* "foo"))
 ```
 ```lisp
@@ -449,9 +448,9 @@ For example, these two are equivalent:
   (write-value writer "foo"))
 ```
 
-*** ejson:make-writer
+### jzon:make-writer
 
-*Function* **ejson:make-writer** *&key stream pretty coerce-key replacer max-depth => writer*
+*Function* **jzon:make-writer** *&key stream pretty coerce-key replacer max-depth => writer*
 
 * *stream* - an open character or binary output `stream`
 * *pretty* - a boolean
@@ -459,19 +458,19 @@ For example, these two are equivalent:
 * *replacer* - a function of two arguments (see below)
 * *max-depth* - a positive integer, or a boolean
 
-*writer* - a `ejson:writer`
+*writer* - a `jzon:writer`
 
-**** Description
+#### Description
 
-Construct a [`ejson:writer`](#ejsonwriter) for writing JSON via subsequent calls to [`ejson:write-value`](#ejsonwrite-value).
+Construct a [`jzon:writer`](#jzonwriter) for writing JSON via subsequent calls to [`jzon:write-value`](#jzonwrite-value).
 
 If *pretty* is true, all output is indented with spaces and newlines.
 
 *max-depth* limits the depth of nesting arrays/objects. Use `nil` to disable it, or `t` to set to default.
 
-When either *max-depth* is exceeded, functions which increase the depth, such as `ejson:begin-array` or `ejson:begin-object` shall signal a `ejson:json-write-limit-error` error.
+When either *max-depth* is exceeded, functions which increase the depth, such as `jzon:begin-array` or `jzon:begin-object` shall signal a `jzon:json-write-limit-error` error.
 
-***** stream
+##### stream
 
 *stream* is a destination as in `format`, or a `pathname`:
 
@@ -481,206 +480,206 @@ When either *max-depth* is exceeded, functions which increase the depth, such as
 * a `string` with a fill-pointer - writes to that string as `with-output-to-string`
 * a `pathname` - Must designate a file. Creates or supersedes a new file and writes to it
 
-***** coerce-key
+##### coerce-key
 
 A function for coercing keys to strings. See [Custom Serialization](#custom-serialization).
 
-***** replacer
+##### replacer
 
-Please see the section in [`ejson:stringify`](#ejsonstringify).
+Please see the section in [`jzon:stringify`](#jzonstringify).
 
-:warning: Because [`ejson:make-writer`](#ejsonmake-writer) can open a file, it is recommended you use [`ejson:with-writer`](#ejsonwith-writer) instead, unless you need indefinite extent.
+:warning: Because [`jzon:make-writer`](#jzonmake-writer) can open a file, it is recommended you use [`jzon:with-writer`](#jzonwith-writer) instead, unless you need indefinite extent.
 
-*** ejson:close-writer
+### jzon:close-writer
 
-*Function* **ejson:close-writer** *writer*
+*Function* **jzon:close-writer** *writer*
 
 *=> writer*
 
-* *writer* - a [`ejson:writer`](#ejsonwriter)
+* *writer* - a [`jzon:writer`](#jzonwriter)
 
-**** Description
+#### Description
 
 Closes the writer and releases any held resources.
 
-*** ejson:with-writer
+### jzon:with-writer
 
-*Macro* **ejson:with-writer** *(var &rest args) declaration\* form\**
+*Macro* **jzon:with-writer** *(var &rest args) declaration\* form\**
 
-*Macro* **ejson:with-writer\*** *(&rest args) declaration\* form\**
+*Macro* **jzon:with-writer\*** *(&rest args) declaration\* form\**
 
 * *var* - a symbol
-* *args* - initialization arguments to `ejson:make-writer`
+* *args* - initialization arguments to `jzon:make-writer`
 * *declaration* - a declare expression, not evaluated
 * *forms* - an implicig progn
 
-**** Description
+#### Description
 
-As [`ejson:make-writer`](#ejsonmake-writer) + `unwind-protect` + [`ejson:close-writer`](#ejsonclose-writer).
+As [`jzon:make-writer`](#jzonmake-writer) + `unwind-protect` + [`jzon:close-writer`](#jzonclose-writer).
 
 Use this like you would `with-open-file`.
 
-`ejson:with-writer*` binds the variable [`ejson:*writer*`](#ejsonwriter)
+`jzon:with-writer*` binds the variable [`jzon:*writer*`](#jzonwriter)
 
-*** ejson:write-value
+### jzon:write-value
 
-*Generic Function* **ejson:write-value** *writer* *value*
+*Generic Function* **jzon:write-value** *writer* *value*
 
-* *writer* - a `ejson:writer`
-* *value* - a `ejson:json-element`, or other value (see below) 
+* *writer* - a `jzon:writer`
+* *value* - a `jzon:json-element`, or other value (see below) 
 
 *=> writer*
 
-**** Description
+#### Description
 
-`ejson:write-value writer value` - Writes any `value` to the `writer`. Usable when writing a toplevel value, array element, or object property value.
+`jzon:write-value writer value` - Writes any `value` to the `writer`. Usable when writing a toplevel value, array element, or object property value.
 
 ```lisp
-(ejson:write-value writer "Hello, world")
+(jzon:write-value writer "Hello, world")
 ```
 
-`value` can be any `ejson:json-element`, but other values supported. See [Custom Serialization](#custom-serialization).
+`value` can be any `jzon:json-element`, but other values supported. See [Custom Serialization](#custom-serialization).
 
-*** Other Streaming Writer Functions
+### Other Streaming Writer Functions
 
-Here we briefly document all the additional helper functions for interfacing with the `ejson:writer`.
+Here we briefly document all the additional helper functions for interfacing with the `jzon:writer`.
 
 Because the entire API is duplicated, we only refer to the `*`-suffixed functions here for brevity.
 
-**Note:** *To save in verbosity in the following examples, we assume to have a `ejson:*writer*` bound in the following examples.*
+**Note:** *To save in verbosity in the following examples, we assume to have a `jzon:*writer*` bound in the following examples.*
 
 *For trying at the REPL, use something like:*
 ```lisp
-#| Bind `ejson:*writer*` |#
-(setf ejson:*writer* (ejson:make-writer :stream *standard-output* :pretty t))
+#| Bind `jzon:*writer*` |#
+(setf jzon:*writer* (jzon:make-writer :stream *standard-output* :pretty t))
 
 #| Start an array so we can write multiple values |#
-(ejson:begin-array*)
+(jzon:begin-array*)
 ```
 
-***** Arrays
+##### Arrays
 
-`ejson:begin-array writer` - Begin writing an array
+`jzon:begin-array writer` - Begin writing an array
 
 `json:end-array writer` - Finish writing an array.
 
 ```lisp
-(ejson:begin-array*)
-(ejson:write-value* 0)
-(ejson:write-value* 1)
-(ejson:write-value* 2)
-(ejson:end-array*)
+(jzon:begin-array*)
+(jzon:write-value* 0)
+(jzon:write-value* 1)
+(jzon:write-value* 2)
+(jzon:end-array*)
 ```
 
-`ejson:with-array writer` - Open a block to begin writing array values.
+`jzon:with-array writer` - Open a block to begin writing array values.
 
 ```lisp
-(ejson:with-array*
-  (ejson:write-value* 0)
-  (ejson:write-value* 1)
-  (ejson:write-value* 2))
+(jzon:with-array*
+  (jzon:write-value* 0)
+  (jzon:write-value* 1)
+  (jzon:write-value* 2))
 ```
 
-`ejson:write-values writer &rest values*` - Write several array values.
+`jzon:write-values writer &rest values*` - Write several array values.
 ```lisp
-(ejson:with-array*
-  (ejson:write-values* 0 1 2))
+(jzon:with-array*
+  (jzon:write-values* 0 1 2))
 ```
 
 
-`ejson:write-array` - Open a new array, write its values, and close it.
+`jzon:write-array` - Open a new array, write its values, and close it.
 
 ```lisp
-(ejson:write-array* 0 1 2)
+(jzon:write-array* 0 1 2)
 ```
 
-***** Objects 
+##### Objects 
 
-*Function* `ejson:begin-object writer` - Begin writing an object.
+*Function* `jzon:begin-object writer` - Begin writing an object.
 
 *Function* `json:end-object writer` - Finish writing an object.
 
 ```lisp
-(ejson:begin-object*)
-(ejson:write-property* "age" 42)
-(ejson:end-object*)
+(jzon:begin-object*)
+(jzon:write-property* "age" 42)
+(jzon:end-object*)
 ```
 
-*Macro* `ejson:with-object writer` - Open a block where you can begin writing object properties.
+*Macro* `jzon:with-object writer` - Open a block where you can begin writing object properties.
 
 ```lisp
-(ejson:with-object*
-  (ejson:write-property* "age" 42))
+(jzon:with-object*
+  (jzon:write-property* "age" 42))
 ```
 
-*Function* `ejson:write-key writer key` - Write an object key.
+*Function* `jzon:write-key writer key` - Write an object key.
 
 ```lisp
-(ejson:with-object*
-  (ejson:write-key* "age")
-  (ejson:write-value* 42))
+(jzon:with-object*
+  (jzon:write-key* "age")
+  (jzon:write-value* 42))
 ```
 
 *Function* `json:write-property writer key value` - Write an object key and value.
 
 ```lisp
-(ejson:with-object*
-  (ejson:write-property* "age" 42))
+(jzon:with-object*
+  (jzon:write-property* "age" 42))
 ```
 
-*Function* `ejson:write-properties writer &rest key* value*` - Write several object keys and values.
+*Function* `jzon:write-properties writer &rest key* value*` - Write several object keys and values.
 
 ```lisp
-(ejson:with-object*
-  (ejson:write-properties* "age" 42
+(jzon:with-object*
+  (jzon:write-properties* "age" 42
                           "colour" "blue"
                           "x" 0
                           "y" 10))
 ```
 
-*Function* `ejson:write-object writer &rest key* value*` - Open a new object, write its keys and values, and close it.
+*Function* `jzon:write-object writer &rest key* value*` - Open a new object, write its keys and values, and close it.
 
 ```lisp
-(ejson:write-object* "age" 42
+(jzon:write-object* "age" 42
                     "colour" "blue"
                     "x" 0
                     "y" 10)
 ```
 
 
-*** Streaming Writer Example
+### Streaming Writer Example
 
-`ejson:stringify` could be approximately defined as follows:
+`jzon:stringify` could be approximately defined as follows:
 
 ```lisp
-(defun my/ejson-stringify (value)
+(defun my/jzon-stringify (value)
   (labels ((recurse (value)
              (etypecase value
-               (ejson:json-atom
-                 (ejson:write-value* value))
+               (jzon:json-atom
+                 (jzon:write-value* value))
                (vector
-                 (ejson:with-array*
+                 (jzon:with-array*
                    (map nil #'recurse value)))
                (hash-table
-                 (ejson:with-object*
+                 (jzon:with-object*
                    (maphash (lambda (k v)
-                              (ejson:write-key* k)
+                              (jzon:write-key* k)
                               (recurse v))
                             value))))))
     (with-output-to-string (s)
-      (ejson:with-writer* (:stream s)
+      (jzon:with-writer* (:stream s)
         (recurse value)))))
 ```
 
-** Custom Serialization
+## Custom Serialization
 
-When using either [`ejson:stringify`](#ejsonstringify) or [`ejson:write-value`](#ejsonwrite-value), you can customize writing of any values not covered in the [Type Mappings](#type-mappings) in an few different ways.
+When using either [`jzon:stringify`](#jzonstringify) or [`jzon:write-value`](#jzonwrite-value), you can customize writing of any values not covered in the [Type Mappings](#type-mappings) in an few different ways.
 
 The call graph looks like this:
 
-`ejson:write-value` => `(method standard-object)` => `ejson:coerced-fields`
+`jzon:write-value` => `(method standard-object)` => `jzon:coerced-fields`
 
-*** standard-object
+### standard-object
 
 By default, if your object is a `standard-object`, it will be serialized as a JSON object, using each of its **bound** slots as keys.
 
@@ -692,7 +691,7 @@ A slot's `:type` is used to interpret the meaning of `nil` in that slot:
 
 **Note**: When unspecified, a slot will serialize `nil` as `null`.
 
-**** standard-object Serialization Example
+#### standard-object Serialization Example
 
 Consider the following classes:
 
@@ -725,7 +724,7 @@ Consider the following classes:
 Now consider the following scenarios:
 
 ```lisp
-(ejson:stringify (make-instance 'person :name "Anya" :job nil
+(jzon:stringify (make-instance 'person :name "Anya" :job nil
                                :married nil :children nil)
                 :pretty t :stream t)
 ```
@@ -746,7 +745,7 @@ Now consider the following scenarios:
 A second example:
 ```lisp
 
-(ejson:stringify (make-instance 'person :name "Loid" :alias "Twilight" 
+(jzon:stringify (make-instance 'person :name "Loid" :alias "Twilight" 
                                :job (make-instance 'job :company "WISE" :title "Agent")
                                :married t
                                :children (list (make-instance 'person :name "Anya"
@@ -781,15 +780,15 @@ Here we can note:
 3. `married` is t, which serializes as `true`
 4. `children` now contains a child element
 
-If you require more control, please see the generic function [`ejson:coerced-fields`](#coerced-fields).
+If you require more control, please see the generic function [`jzon:coerced-fields`](#coerced-fields).
 
-*** Specializing coerced-fields
+### Specializing coerced-fields
 
-The generic function `ejson:coerced-fields` is called by ejson when writing a value as a JSON object in order to find what properties that object has.
+The generic function `jzon:coerced-fields` is called by jzon when writing a value as a JSON object in order to find what properties that object has.
 
 It is useful when the [standard-object](#standard-object) almost does what you want, but you want some more control.
 
-`ejson:coerced-fields` should return a list of 'fields', which are two (or three) element lists of the form:
+`jzon:coerced-fields` should return a list of 'fields', which are two (or three) element lists of the form:
 
 ```lisp
 (name value &optional type)
@@ -799,7 +798,7 @@ It is useful when the [standard-object](#standard-object) almost does what you w
 * `value` can be any value - it'll be coerced if necessary.
 * `type` is used as `:type` above, in order to resolve ambiguities with `nil`.
 
-**** coerced-fields Example
+#### coerced-fields Example
 
 Consider our previous `person` class. Say we wish to:
 
@@ -808,7 +807,7 @@ Consider our previous `person` class. Say we wish to:
 3. Show `false` for their job if not applicable 
 
 ``` lisp
-(defmethod ejson:coerced-fields ((person person))
+(defmethod jzon:coerced-fields ((person person))
   (list (list "name" (name person))
         (list "type" "person")
         (list "job" (job person) 'boolean)))
@@ -817,7 +816,7 @@ Consider our previous `person` class. Say we wish to:
 now
 
 ```lisp
-(ejson:stringify (make-instance 'person :name "Anya" :job nil
+(jzon:stringify (make-instance 'person :name "Anya" :job nil
                                :married nil :children nil) 
                 :pretty t :stream t)
 ```
@@ -831,30 +830,30 @@ now
 
 If you require even more control, please see the section on (write-values)[#write-values] where we make use of the [writer](#streaming-writer) API.
 
-*** Specializing ejson:write-value
+### Specializing jzon:write-value
 
-The final way to support custom serialization, is the `ejson:write-value` generic function.
+The final way to support custom serialization, is the `jzon:write-value` generic function.
 
 This allows you to emit whatever values you wish for a given object.
 
-Once again considering our `person` and `job` classes above, we can specialize a method for `ejson:write-value` on `job`:
+Once again considering our `person` and `job` classes above, we can specialize a method for `jzon:write-value` on `job`:
 
 ```lisp
-(defmethod ejson:write-value (writer (job job))
+(defmethod jzon:write-value (writer (job job))
   (cond
     ((string= (company job) "WISE")
-      (ejson:write-object writer
+      (jzon:write-object writer
                          "company" "Eastern Healthcare"
                          "title" (aref #("Psychologist" "Physician" "Janitor" "Surgeon" "Receptionist") (random 5))))
     ((string= (title job) "Assassin")
-      (ejson:with-object writer
-        (ejson:write-properties writer
+      (jzon:with-object writer
+        (jzon:write-properties writer
                                "company" "City Hall"
                                "title" "Clerk")
-        (ejson:write-key writer "lifelines")
-        (ejson:write-array writer "Yuri" "Camilla")))
+        (jzon:write-key writer "lifelines")
+        (jzon:write-array writer "Yuri" "Camilla")))
     ((string= (company job) "State Police")
-      (ejson:write-string "Classified"))
+      (jzon:write-string "Classified"))
     (t #| Allow default to take over |#
       (call-next-method))))
 ```
@@ -862,7 +861,7 @@ Once again considering our `person` and `job` classes above, we can specialize a
 And some examples:
 
 ```lisp
-(ejson:stringify (make-instance 'job :company "WISE" :title "Agent") :stream t :pretty t)
+(jzon:stringify (make-instance 'job :company "WISE" :title "Agent") :stream t :pretty t)
 ```
 ```json
 {
@@ -872,7 +871,7 @@ And some examples:
 ```
 
 ```lisp
-(ejson:stringify (make-instance 'job :company "The Butcher" :title "Assassin") :stream t :pretty t)
+(jzon:stringify (make-instance 'job :company "The Butcher" :title "Assassin") :stream t :pretty t)
 ```
 ```json
 {
@@ -888,114 +887,114 @@ And some examples:
 And something that cannot be done with the other methods:
 
 ```lisp
-(ejson:stringify (make-instance 'job :company "State Police" :title "Interrogator") :stream t :pretty t)
+(jzon:stringify (make-instance 'job :company "State Police" :title "Interrogator") :stream t :pretty t)
 ```
 ```json
 "Classified"
 ```
-** ejson:parser
+## jzon:parser
 
-Similarly to [`ejson:writer`](#ejsonwriter), `ejson:parser` exists to parse JSON in parts by providing a simple, SAX-like streaming API.
+Similarly to [`jzon:writer`](#jzonwriter), `jzon:parser` exists to parse JSON in parts by providing a simple, SAX-like streaming API.
 
 An example:
 
 ```lisp
-(ejson:with-parser (parser "{\"x\": 1, \"y\": [2, 3], \"live\": false}")
-  (ejson:parse-next parser)  #| :begin-object |#
-  (ejson:parse-next parser)  #| :object-key, "x" |#
-  (ejson:parse-next parser)  #| :value, 1 |#
-  (ejson:parse-next parser)  #| :object-key, "y" |#
-  (ejson:parse-next parser)  #| :begin-array |#
-  (ejson:parse-next parser)  #| :value, 2 |#
-  (ejson:parse-next parser)  #| :value, 3 |#
-  (ejson:parse-next parser)  #| :end-array |#
-  (ejson:parse-next parser)  #| :object-key, "live" |#
-  (ejson:parse-next parser)  #| :value, nil |#
-  (ejson:parse-next parser)  #| :end-object |#
-  (ejson:parse-next parser)) #| nil |#
+(jzon:with-parser (parser "{\"x\": 1, \"y\": [2, 3], \"live\": false}")
+  (jzon:parse-next parser)  #| :begin-object |#
+  (jzon:parse-next parser)  #| :object-key, "x" |#
+  (jzon:parse-next parser)  #| :value, 1 |#
+  (jzon:parse-next parser)  #| :object-key, "y" |#
+  (jzon:parse-next parser)  #| :begin-array |#
+  (jzon:parse-next parser)  #| :value, 2 |#
+  (jzon:parse-next parser)  #| :value, 3 |#
+  (jzon:parse-next parser)  #| :end-array |#
+  (jzon:parse-next parser)  #| :object-key, "live" |#
+  (jzon:parse-next parser)  #| :value, nil |#
+  (jzon:parse-next parser)  #| :end-object |#
+  (jzon:parse-next parser)) #| nil |#
 ```
 
-*** ejson:make-parser
+### jzon:make-parser
 
-*Function* **ejson:make-parser** *in &key allow-comments allow-trailing-comma *allow-multiple-content* max-string-length key-fn*
+*Function* **jzon:make-parser** *in &key allow-comments allow-trailing-comma *allow-multiple-content* max-string-length key-fn*
 
 *=> writer*
 
-* *in* - a string, vector (unsigned-byte 8), stream, pathname, or [`ejson:span`](#ejsonspan)
+* *in* - a string, vector (unsigned-byte 8), stream, pathname, or [`jzon:span`](#jzonspan)
 * *allow-comments* - a `boolean`
 * *allow-trailing-comma* - a `boolean`
 * *allow-multiple-content* - a `boolean`
 * *max-string-length* - a positive `integer`
 * *key-fn* - a designator for a function of one argument, or a boolean
 
-*value* - a `ejson:parser`
+*value* - a `jzon:parser`
 
-**** Description
+#### Description
 
-Creates a parser from `in` for use in subsequent [`ejson:parse-next`](#ejsonparse-next).
+Creates a parser from `in` for use in subsequent [`jzon:parse-next`](#jzonparse-next).
 
-The behaviour of `ejson:parser` is analogous to `ejson:parse`, except you control the interpretation of the JSON events.
+The behaviour of `jzon:parser` is analogous to `jzon:parse`, except you control the interpretation of the JSON events.
 
 `in` can be any of the following types:
 
 * `string`
 * `(vector (unsigned-byte 8))` - octets in utf-8
 * `stream` - character or binary in utf-8
-* `pathname` - `ejson:make-parser` will open the file for reading in utf-8
-* [`ejson:span`](#ejsonspan) - denoting a part of a string/vector
+* `pathname` - `jzon:make-parser` will open the file for reading in utf-8
+* [`jzon:span`](#jzonspan) - denoting a part of a string/vector
 
 **Tip:** *You can also use a displaced array to denote a region of an array without copying it.*
 
-When *max-string-length* is exceeded, [`ejson:parse-next`](#ejsonparse-next) shall signal a `ejson:json-parse-limit-error` error.
+When *max-string-length* is exceeded, [`jzon:parse-next`](#jzonparse-next) shall signal a `jzon:json-parse-limit-error` error.
 
-JSON requires there  be only one toplevel element. Using *allow-multiple-content* allows parsing of multiple toplevel JSON elements. See [`ejson:parse-next`](#ejsonparse-next) on how this affects the results.
+JSON requires there  be only one toplevel element. Using *allow-multiple-content* allows parsing of multiple toplevel JSON elements. See [`jzon:parse-next`](#jzonparse-next) on how this affects the results.
 
-:warning: Because [`ejson:make-parser`](#ejsonmake-parser) can open a file, it is recommended you use [`ejson:with-parser`](#ejsonwith-parser) instead, unless you need indefinite extent.
+:warning: Because [`jzon:make-parser`](#jzonmake-parser) can open a file, it is recommended you use [`jzon:with-parser`](#jzonwith-parser) instead, unless you need indefinite extent.
 
-*** ejson:close-parser
+### jzon:close-parser
 
-*Function* **ejson:close-parser** *parser*
+*Function* **jzon:close-parser** *parser*
 
 *=> parser*
 
-* *parser* - a [`ejson:parser`](#ejsonparser)
+* *parser* - a [`jzon:parser`](#jzonparser)
 
-**** Description
+#### Description
 
 Closes the parser and releases any held resources.
 
-*** ejson:with-parser
+### jzon:with-parser
 
-*Macro* **ejson:with-parser** *(var &rest args) declaration\* form\**
+*Macro* **jzon:with-parser** *(var &rest args) declaration\* form\**
 
 * *var* - a symbol.
 * *declaration* - a declare expression; not evaluated.
 * *form* - an implicit progn
 
-**** Description
+#### Description
 
-As [`ejson:make-parser`](#ejsonmake-parser) + `unwind-protect` + [`ejson:close-parser`](#ejsonclose-parser).
+As [`jzon:make-parser`](#jzonmake-parser) + `unwind-protect` + [`jzon:close-parser`](#jzonclose-parser).
 
 Use this like you would `with-open-file`.
 
-*** ejson:parse-next
+### jzon:parse-next
 
-*Function* **ejson:parse-next** *parser*
+*Function* **jzon:parse-next** *parser*
 
 *=> event, value*
 
 * *event* - a symbol, see below
-* *value* - a `ejson:json-atom`
+* *value* - a `jzon:json-atom`
 
-**** Description
+#### Description
 
-Read the next event from the [`ejson:parser`](#ejsonparser).
+Read the next event from the [`jzon:parser`](#jzonparser).
 
 Always returns two values indicating the next available event on the JSON stream:
 
 | *event*       | *value*                                 |
 |---------------|-----------------------------------------|
-| :value        | `ejson:json-atom`                        |
+| :value        | `jzon:json-atom`                        |
 | :begin-array  | `nil`                                   |
 | :end-array    | `nil`                                   |
 | :begin-object | `nil`                                   |
@@ -1005,70 +1004,70 @@ Always returns two values indicating the next available event on the JSON stream
 
 **Note:** The `nil` *event* represents conclusion of a toplevel value, and should be taken as "parsing has successfully completed".
 
-When the parser's *max-string-length* is exceeded, [`ejson:parse-next`](#ejsonparse-next) shall signal a `ejson:json-parse-limit-error` error. See [`ejson:make-parser`](#ejsonmake-parser).
+When the parser's *max-string-length* is exceeded, [`jzon:parse-next`](#jzonparse-next) shall signal a `jzon:json-parse-limit-error` error. See [`jzon:make-parser`](#jzonmake-parser).
 
-***** *allow-multiple-content*
+##### *allow-multiple-content*
 
-When *allow-multiple-content* enabled in the [`ejson:parser`](#ejsonparser), it shall emit the `nil` event after no more content is available.
+When *allow-multiple-content* enabled in the [`jzon:parser`](#jzonparser), it shall emit the `nil` event after no more content is available.
 
 ```lisp
-(ejson:with-parser (parser "1 2")
-  (ejson:parse-next parser)  #| :value, 1 |#
-  (ejson:parse-next parser)  #| :value, 2 |#
-  (ejson:parse-next parser)) #| nil, nil |#
+(jzon:with-parser (parser "1 2")
+  (jzon:parse-next parser)  #| :value, 1 |#
+  (jzon:parse-next parser)  #| :value, 2 |#
+  (jzon:parse-next parser)) #| nil, nil |#
 ```
 
-*** ejson:parse-next-element
+### jzon:parse-next-element
 
-*Function* **ejson:parse-next-element** *parser &key max-depth eof-error-p eof-value*
+*Function* **jzon:parse-next-element** *parser &key max-depth eof-error-p eof-value*
 
 *=> value*
 
-* *parser* - a [`ejson:parser`](#ejsonparser).
+* *parser* - a [`jzon:parser`](#jzonparser).
 * *max-depth* - a positive `integer`, or a boolean
 * *eof-error-p* - a generalized boolean. The default is true.
 * *eof-value* - an object. The default is nil.
 
-*value* - a `ejson:json-element` (see [Type Mappings](#type-mappings))
+*value* - a `jzon:json-element` (see [Type Mappings](#type-mappings))
 
-**** Description
+#### Description
 
-Read the next element from the [`ejson:parser`](#ejsonparser).
+Read the next element from the [`jzon:parser`](#jzonparser).
 
-This is a utility function around [`ejson:parse-next`](#ejsonparse-next) that behaves similar to [`ejson:parse`](#ejsonparse), reading a full `ejson:json-element` from a [`ejson:parser`](#ejsonparser).
+This is a utility function around [`jzon:parse-next`](#jzonparse-next) that behaves similar to [`jzon:parse`](#jzonparse), reading a full `jzon:json-element` from a [`jzon:parser`](#jzonparser).
 
-***** *eof-error-p* and *eof-value*
+##### *eof-error-p* and *eof-value*
 
 Similar to `cl:read-line`, *eof-error-p* controls whether we should signal an error when no more elements are available, or whether to return *eof-value*.
 
 :warning: These values are most relevant when reading array elements. See the following example:
 
 ```lisp
-(ejson:with-parser (p "[1, 2]")
-  (ejson:parse-next p)  #| :begin-array, nil |#
-  (ejson:parse-next-element p :eof-error-p nil)  #| 1 |#
-  (ejson:parse-next-element p :eof-error-p nil)  #| 2 |#
-  (ejson:parse-next-element p :eof-error-p nil)) #| nil |#
+(jzon:with-parser (p "[1, 2]")
+  (jzon:parse-next p)  #| :begin-array, nil |#
+  (jzon:parse-next-element p :eof-error-p nil)  #| 1 |#
+  (jzon:parse-next-element p :eof-error-p nil)  #| 2 |#
+  (jzon:parse-next-element p :eof-error-p nil)) #| nil |#
 ```
 
 Use this when you want to read a full sub-object from a parser, as follows:
 
 ```lisp
-(ejson:with-parser (p "{ \"foo\": [1, 2, 3] }")
-  (ejson:parse-next p)          #| :begin-object, nil |#
-  (ejson:parse-next p)          #| :object-key, "foo" |#
+(jzon:with-parser (p "{ \"foo\": [1, 2, 3] }")
+  (jzon:parse-next p)          #| :begin-object, nil |#
+  (jzon:parse-next p)          #| :object-key, "foo" |#
   #| Saw `:object-key`, so next must be a value |#
-  (ejson:parse-next-element p)  #| #(1 2 3) |#
-  (ejson:parse-next p))         #| :end-object, nil |#
+  (jzon:parse-next-element p)  #| #(1 2 3) |#
+  (jzon:parse-next p))         #| :end-object, nil |#
 ```
 
-******* Streaming Parser Example
+### Streaming Parser Example
 
-[`ejson:parse`](#ejsonparse) could be approximately defined as follows:
+[`jzon:parse`](#jzonparse) could be approximately defined as follows:
 
 ```lisp
-(defun my/ejson-parse (in)
-  (ejson:with-parser (parser in)
+(defun my/jzon-parse (in)
+  (jzon:with-parser (parser in)
     (let (top stack key)
       (flet ((finish-value (value)
                 (typecase stack
@@ -1076,7 +1075,7 @@ Use this when you want to read a full sub-object from a parser, as follows:
                   ((cons list)          (push value (car stack)))
                   ((cons hash-table)    (setf (gethash (pop key) (car stack)) value)))))
         (loop
-          (multiple-value-bind (event value) (ejson:parse-next parser)
+          (multiple-value-bind (event value) (jzon:parse-next parser)
             (ecase event
               ((nil)          (return top))
               (:value         (finish-value value))
@@ -1087,16 +1086,16 @@ Use this when you want to read a full sub-object from a parser, as follows:
               (:end-object    (finish-value (pop stack))))))))))
 ```
 
-***** Motivation and Features
+# Motivation and Features
 
-In writing ejson, we prioritize the following properties, in order:
+In writing jzon, we prioritize the following properties, in order:
 
 * [Safety](#safety)
 * [Correctness](#correctness)
 * [Convenience](#convenience)
 * [Performance](#performance)
 
-***** Safety
+## Safety
 
 [RFC 8259][JSONRFC] allows setting limits on things such as:
 
@@ -1106,9 +1105,9 @@ In writing ejson, we prioritize the following properties, in order:
 
 We should be safe in the face of untrusted JSON and will error on 'unreasonable' input out-of-the-box, such as deeply nested objects or overly long strings.
 
-******* Type Safety
+### Type Safety
 
-All of ejson's public API's are type safe, issuing `cl:type-error` as appropriate.
+All of jzon's public API's are type safe, issuing `cl:type-error` as appropriate.
 
 Some other JSON parsers will make dangerous use of features like `optimize (safety 0) (speed 3)` without type-checking their public API:
 
@@ -1119,66 +1118,66 @@ CL-USER> (parse 2)
 
 Such errors are unreasonable.
 
-******* Avoid Infinite Interning
+### Avoid Infinite Interning
 
-ejson chooses to (by default) keep object keys as strings. Some libraries choose to `intern` object keys in some package. This is dangerous in the face of untrusted JSON, as every unique key read will be added to that package and never garbage collected.
+jzon chooses to (by default) keep object keys as strings. Some libraries choose to `intern` object keys in some package. This is dangerous in the face of untrusted JSON, as every unique key read will be added to that package and never garbage collected.
 
-******* Avoid Stack Exhaustion
+### Avoid Stack Exhaustion
 
-`ejson:parse` is written in an iterative way which avoids exhausting the call stack. In addition, we provide `:max-depth` to guard against unreasonable inputs.
-For even more control, you can make use of the `ejson:with-parser` API's to avoid consing large amounts of user-supplied data to begin with.
+`jzon:parse` is written in an iterative way which avoids exhausting the call stack. In addition, we provide `:max-depth` to guard against unreasonable inputs.
+For even more control, you can make use of the `jzon:with-parser` API's to avoid consing large amounts of user-supplied data to begin with.
 
-***** Correctness
+## Correctness
 
 This parser is written against [RFC 8259][JSONRFC] and strives to adhere strictly for maximum compliance and few surprises.
 
 It also has been tested against the [JSONTestSuite][JSONTestSuite]. See the [JSONTestSuite](JSONTestSuite/) directory in this repo for making & running the tests.
 
-In short, ejson is the only CL JSON library which correctly:
+In short, jzon is the only CL JSON library which correctly:
 * *declines* all invalid inputs per that suite
 * *accepts* all valid inputs per that suite
 
-Additionally, ejson is one of a couple which never hard crash due to edge-cases like deeply nested objects/arrays.
+Additionally, jzon is one of a couple which never hard crash due to edge-cases like deeply nested objects/arrays.
 
-******* Unambiguous values
+### Unambiguous values
 
 Values are never ambiguous between `[]`, `false`, `{}`, `null`, or a missing key.
 
-******* Compatible Float IO
+### Compatible Float IO
 
-While more work is doubtlessly necessary to validate further, care has been taken to ensure floating-point values are not lost between `(ejson:parse (ejson:stringify f))`, even across CL implementations.
+While more work is doubtlessly necessary to validate further, care has been taken to ensure floating-point values are not lost between `(jzon:parse (jzon:stringify f))`, even across CL implementations.
 
 In particular, certain edge-case values such as subnormals shall parse `===` with JavaScript parsing libraries.
 
-***** Convenience
+## Convenience
 
-You call `ejson:parse`, and you get a reasonably standard CL object back.
-You call `ejson:stringify` with a reasonably standard CL object and you should get reasonable JSON.
+You call `jzon:parse`, and you get a reasonably standard CL object back.
+You call `jzon:stringify` with a reasonably standard CL object and you should get reasonable JSON.
 
 * No custom data structures or accessors required
 * No worrying about key case auto conversion on strings, nor or hyphens/underscores replacement on symbols.
 * No worrying about what package symbols are interned in (no symbols).
-* No worrying about dynamic variables affecting a parse as in cl-json, jonathan, jsown. Everything affecting `ejson:parse` is given at the call-site.
+* No worrying about dynamic variables affecting a parse as in cl-json, jonathan, jsown. Everything affecting `jzon:parse` is given at the call-site.
 
-`ejson:parse` also accepts either a string, octet vector, stream, or pathname for simpler usage over libraries requiring one or the other, or having separate parse functions.
+`jzon:parse` also accepts either a string, octet vector, stream, or pathname for simpler usage over libraries requiring one or the other, or having separate parse functions.
 
 Finally, all public API's strive to have reasonable defaults so things 'Just Work'.
 
-***** Performance
+## Performance
 
-While being the last emphasized feature, it is still important to for ejson to perform best-in-class when it comes to reducing parsing times and memory usage.
+While being the last emphasized feature, it is still important to for jzon to perform best-in-class when it comes to reducing parsing times and memory usage.
 
-The general goal benchmark is for ejson to live in the 50% [jsown][jsown] range. This means that if [jsown][jsown] takes 1 second to parse, we will have succeeded if ejson takes <=2 seconds.
+The general goal benchmark is for jzon to live in the 50% [jsown][jsown] range. This means that if [jsown][jsown] takes 1 second to parse, we will have succeeded if jzon takes <=2 seconds.
 
-With this, ejson will generally outperform all other libraries. 
+With this, jzon will generally outperform all other libraries. 
 
 Importantly, we also strive to be safe even in `(optimize (speed 3) (safety 0))` environments.
 
-******* vs jsown
+### vs jsown
 
 [jsown][jsown] is used as the golden standard when it comes to *performance*, as it offers consistently fast parsing speeds on a wide variety of inputs. 
 
- However, with ejson, we have **much** higher scores when considering ejson's [priorities](#motivation-and-features).
+ However, with jzon, we have **much** higher scores when considering jzon's [priorities](#motivation-and-features).
 
 Consider this REPL interaction when considering [safety](#safety) and [correctness](#correctness):
 
@@ -1203,7 +1202,7 @@ If Performance is you #1 concern, and you're not afraid of your entire process c
 
 Please see the JSONTestSuite results with jsown [here](JSONTestSuite/results/jsown.log) for several other failures.
 
-******* vs jonathan
+### vs jonathan
 
 [jonathan][jonathan] boasts incredible performance ..  on JSON smaller than 200 bytes, its performance on SBCL tanks on anything larger.
 
@@ -1216,44 +1215,44 @@ CL-USER(39): (jonathan:parse "12,]???")
 CL-USER(40): (jonathan:parse 2)
 
 debugger invoked on a SB-SYS:MEMORY-FAULT-ERROR in thread
-*****<THREAD "main thread" RUNNING {10010E0073}>:
+#<THREAD "main thread" RUNNING {10010E0073}>:
   Unhandled memory fault at #xFFFFFFFFFFFFFFFD.
 ```
 
 Please see the JSONTestSuite results with Jonathan [here](JSONTestSuite/results/jonathan.log) for several other failures.
 
-******* Object key pooling
+### Object key pooling
 
-By default, ejson will keep track of object keys each `ejson:parse` (or `ejson:make-parser`), causing `string=` keys in a nested JSON object to be shared (`eq`):
+By default, jzon will keep track of object keys each `jzon:parse` (or `jzon:make-parser`), causing `string=` keys in a nested JSON object to be shared (`eq`):
 
 ```lisp
-(ejson:parse "[{\"x\": 5}, {\"x\": 10}, {\"x\": 15}]")
+(jzon:parse "[{\"x\": 5}, {\"x\": 10}, {\"x\": 15}]")
 ```
 
 In this example, the string `x` is shared (eq) between all 3 objects.
 
 This optimizes for the common case of reading a JSON payload containing many duplicate keys.
 
-**Tip**: This behaviour may be altered by supplying a different `:key-fn` to `ejson:parse` or `ejson:make-parser`.
+**Tip**: This behaviour may be altered by supplying a different `:key-fn` to `jzon:parse` or `jzon:make-parser`.
 
-******* `base-string` coercion
+### `base-string` coercion
 
 When possible, strings will be coerced to `cl:simple-base-string`. This can lead to upwards of 1/4 memory usage per string on implementations like SBCL, which store `string`s internally as UTF32, while `base-string` can be represented in 8 bits per char.
 
-***** Dependencies
+# Dependencies
 
 * [closer-mop](https://github.com/pcostanza/closer-mop)
 * [flexi-streams](https://github.com/edicl/flexi-streams)
 * [float-features](https://github.com/Shinmera/float-features)
 * [uiop](https://gitlab.common-lisp.net/asdf/asdf)
 
-***** License
+# License
 
 See [LICENSE](LICENSE).
 
-ejson was originally a fork of [st-json](https://marijnhaverbeke.nl/st-json/), but I ended up scrapping all of the code except for for the function decoding Unicode.
+jzon was originally a fork of [st-json](https://marijnhaverbeke.nl/st-json/), but I ended up scrapping all of the code except for for the function decoding Unicode.
 
-***** Alternatives
+# Alternatives
 
 There are many CL JSON libraries available, and I defer to Sabra Crolleton's definitive list and comparisons [https://sabracrolleton.github.io/json-review](https://sabracrolleton.github.io/json-review).
 
@@ -1266,7 +1265,7 @@ But for posterity, included in this repository is a set of tests and results for
 * [shasht][shasht]
 * [yason][yason]
 
-I believe ejson to be the superior choice and hope for it to become the new, true de-facto library in the world of JSON-in-CL once and for all.
+I believe jzon to be the superior choice and hope for it to become the new, true de-facto library in the world of JSON-in-CL once and for all.
 
 [JSONRFC]: https://tools.ietf.org/html/rfc8259
 [JSONTestSuite]: https://github.com/nst/JSONTestSuite
