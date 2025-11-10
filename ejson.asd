@@ -5,6 +5,7 @@
   :license "MIT"
   :depends-on (#:closer-mop
                #:flexi-streams
+               #:cl-change-case
                (:feature (:not :ecl) #:float-features)
                #:trivial-gray-streams
                #:uiop)
@@ -14,6 +15,6 @@
                              (:file "eisel-lemire")
                              (:file "ratio-to-double")
                              (:file "schubfach")
-                             (:file "camel-case" :depends-on "packages")
-                             (:file "case-from-cljson" :depends-on "packages")
+                             ;; (:file "camel-case" :depends-on ("packages"))
+                             ;; (:file "case-from-cljson" :depends-on ("packages"))
                              (:file "ejson" :depends-on ("packages" "eisel-lemire" "ratio-to-double" "schubfach"))))))

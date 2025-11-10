@@ -10,3 +10,7 @@
  (:class qlot/source/ultralisp:source-ultralisp
   :initargs (:%version :latest)
   :version "ultralisp-20250211155000"))
+("cl-change-case" .
+ (:class qlot/source/github:source-github
+  :initargs (:repos "rudolfochrist/cl-change-case" :ref nil :branch nil :tag nil)
+  :version "github-3a8cce03592119fe24da87271ccf9b7473814200"))

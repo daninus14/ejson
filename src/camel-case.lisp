@@ -62,32 +62,4 @@
                            (e (first e))
                            (t (string-capitalize str)))))))
 
-(defun parse-to-lisp-case (in &key
-                                (max-depth 128)
-                                (allow-comments nil)
-                                (allow-trailing-comma nil)
-                                (allow-multiple-content nil)
-                                (max-string-length (min #x100000 (1- array-dimension-limit)))
-                                (key-fn t))
-  (if *deserialize-camel-case-to-lisp-case*
-      (let ((new-key-fn (if (functionp key-fn)
-                            (lambda (x) (funcall key-fn (camel-case-to-lisp x)))
-                            #'camel-case-to-lisp)))
-        (format t "~%deserializing to lisp case~%")
-        (ejson:parse in
-                     :max-depth max-depth
-                     :allow-comments allow-comments
-                     :allow-trailing-comma allow-trailing-comma
-                     :allow-multiple-content allow-multiple-content
-                     :max-string-length max-string-length
-                     :key-fn new-key-fn))
-      (ejson:parse in
-                   :max-depth max-depth
-                   :allow-comments allow-comments
-                   :allow-trailing-comma allow-trailing-comma
-                   :allow-multiple-content allow-multiple-content
-                   :max-string-length max-string-length
-                   :key-fn key-fn)))
-
-
 
