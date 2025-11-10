@@ -2,6 +2,7 @@
 
 (defvar *serialize-lisp-case-to-camel-case* nil)
 (defvar *deserialize-camel-case-to-lisp-case* nil)
+(defvar *deserialize-lisp-case-upcase* nil)
 
 (define-condition json-error (simple-error) ()
   (:documentation "Common error condition for all errors relating to reading/writing JSON."))
@@ -936,21 +937,21 @@ see `close-parser'"
     (macrolet ((finish-value (value &optional check-lc)
                  `(let ((value ,value))
                     (if (null stack)
-                      (if %allow-multiple-content
-                        ,(if check-lc
-                          `(let ((lc (%parser-state-lookahead %parser-state)))
-                            (unless (or (null lc) (%whitespace-p lc))
-                              (%raise 'json-parse-error %pos "Non-whitespace character after JSON atom '~A': '~C' (~A)" (stringify value) lc (char-name lc)))
-                            (return value))
-                          `(return value))
-                        (setf top value))
-                      (let ((container (car stack)))
-                        (if (listp container)
-                          (progn (setf (car stack) (cons value (the list container)))
-                                 (incf (the (integer 0) (car len))))
-                          (setf (gethash (pop key) (the hash-table container)) value))))))
-                (inc-depth ()
-                  `(progn
+                        (if %allow-multiple-content
+                            ,(if check-lc
+                                 `(let ((lc (%parser-state-lookahead %parser-state)))
+                                    (unless (or (null lc) (%whitespace-p lc))
+                                      (%raise 'json-parse-error %pos "Non-whitespace character after JSON atom '~A': '~C' (~A)" (stringify value) lc (char-name lc)))
+                                    (return value))
+                                 `(return value))
+                            (setf top value))
+                        (let ((container (car stack)))
+                          (if (listp container)
+                              (progn (setf (car stack) (cons value (the list container)))
+                                     (incf (the (integer 0) (car len))))
+                              (setf (gethash (pop key) (the hash-table container)) value))))))
+               (inc-depth ()
+                 `(progn
                     (when (= depth %max-depth)
                       (%raise-limit 'json-parse-limit-error %pos %max-depth "Maximum depth exceeded."))
                     (incf depth))))
@@ -961,24 +962,24 @@ see `close-parser'"
             ((nil)          (return top))
             (:value         (finish-value value t))
             (:begin-array   (inc-depth)
-                            (push (list) stack)
-                            (push 0 len))
+             (push (list) stack)
+             (push 0 len))
             (:end-array     (decf depth)
-                            (let ((elements (the list (pop stack)))
-                                  (length (the (integer 0) (pop len))))
-                              (finish-value
-                                (if (zerop length)
-                                  #()
-                                  (loop :with array := (make-array length)
-                                        :for i :from (1- length) :downto 0
-                                        :for elt :in elements
-                                        :do (setf (aref array i) elt)
-                                        :finally (return array))))))
+             (let ((elements (the list (pop stack)))
+                   (length (the (integer 0) (pop len))))
+               (finish-value
+                (if (zerop length)
+                    #()
+                    (loop :with array := (make-array length)
+                          :for i :from (1- length) :downto 0
+                          :for elt :in elements
+                          :do (setf (aref array i) elt)
+                          :finally (return array))))))
             (:begin-object  (inc-depth)
-                            (push (make-hash-table :test 'equal) stack))
+             (push (make-hash-table :test 'equal) stack))
             (:object-key    (push value key))
             (:end-object    (decf depth)
-                            (finish-value (pop stack)))))))))
+             (finish-value (pop stack)))))))))
 
 (defun span (in &key (start 0) end)
   "Define a bounded sequence in `in' for use in `parse' and `make-parser' with a `start' and `end'."
@@ -986,25 +987,30 @@ see `close-parser'"
   (check-type end (or null (integer 0 (#.array-dimension-limit))))
   (etypecase in
     (string
-      (let ((start start)
-            (end (or end (length in))))
-        (unless (<= 0 start end (length in))
-          (error "The bounding indices ~A and ~A are bad for a sequence of length ~A." start end (length in)))
-        (make-instance '%string-span :vector in :start start :end end)))
+     (let ((start start)
+           (end (or end (length in))))
+       (unless (<= 0 start end (length in))
+         (error "The bounding indices ~A and ~A are bad for a sequence of length ~A." start end (length in)))
+       (make-instance '%string-span :vector in :start start :end end)))
     ((vector (unsigned-byte 8))
-      (let ((start start)
-            (end (or end (length in))))
-        (unless (<= 0 start end (length in))
-          (error "The bounding indices ~A and ~A are bad for a sequence of length ~A." start end (length in)))
-        (make-instance '%octet-vector-span :vector in :start start :end end)))
+     (let ((start start)
+           (end (or end (length in))))
+       (unless (<= 0 start end (length in))
+         (error "The bounding indices ~A and ~A are bad for a sequence of length ~A." start end (length in)))
+       (make-instance '%octet-vector-span :vector in :start start :end end)))
     (stream
-      (let ((start start)
-            (end (or end (file-length in))))
-        (unless (<= 0 start end (file-length in))
-          (error "The bounding indices ~A and ~A are bad for a stream of length ~A." start end (file-length in)))
-        (unless (input-stream-p in)
-          (error "The stream ~A is not an input stream." in))
-        (flexi-streams:make-flexi-stream in :element-type (stream-element-type in) :position start :bound end)))))
+     (let ((start start)
+           (end (or end (file-length in))))
+       (unless (<= 0 start end (file-length in))
+         (error "The bounding indices ~A and ~A are bad for a stream of length ~A." start end (file-length in)))
+       (unless (input-stream-p in)
+         (error "The stream ~A is not an input stream." in))
+       (flexi-streams:make-flexi-stream in :element-type (stream-element-type in) :position start :bound end)))))
+
+(defun compose (f g)
+  "Return a function that applies F after G: (f (g args...))."
+  (lambda (&rest args)
+    (funcall f (apply g args))))
 
 (defun parse (in &key
                    (max-depth 128)
@@ -1024,8 +1030,15 @@ see `close-parser'"
   (check-type key-fn (or boolean symbol function))
   (check-type max-string-length (or boolean (integer 1 (#.array-dimension-limit))))
   (let ((key-fn (etypecase key-fn
-                  (null     #'identity)
-                  ((eql t)  (%make-string-pool))
+                  (null #'identity)
+                  ((eql t) (cond ((and *deserialize-camel-case-to-lisp-case*
+                                       *deserialize-lisp-case-upcase*)
+                                  (compose (%make-string-pool)
+                                           (lambda (x) (string-upcase (cl-change-case:param-case x)))))
+                                 (*deserialize-camel-case-to-lisp-case*
+                                  (compose (%make-string-pool)
+                                           #'cl-change-case:param-case))
+                                 (t (%make-string-pool))))
                   (function key-fn)
                   (symbol   (fdefinition key-fn))))
         (max-depth (case max-depth

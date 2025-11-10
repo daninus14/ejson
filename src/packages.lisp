@@ -4,6 +4,7 @@
    ;;; Settings
    #:*serialize-lisp-case-to-camel-case*
    #:*deserialize-camel-case-to-lisp-case*
+   #:*deserialize-lisp-case-upcase*
    
    ;;; Read
    #:parse   
