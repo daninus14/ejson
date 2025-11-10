@@ -1012,6 +1012,22 @@ see `close-parser'"
   (lambda (&rest args)
     (funcall f (apply g args))))
 
+(defun compose* (&rest fns)
+  "Return a function that composes all FNS right-to-left.
+Example: (funcall (compose* #'a #'b #'c) x) => (a (b (c x)))."
+  (reduce #'compose fns))
+
+(defmacro pipe (value &rest forms)
+  "Thread VALUE through FORMS, each of which is either a function symbol
+or a list whose car is a function and whose cdr are additional args.
+Example: (pipe 3 #'1+ #'sqrt) => (sqrt (1+ 3))"
+  (reduce (lambda (acc form)
+            (if (listp form)
+                `(,(car form) ,acc ,@(cdr form))
+                `(funcall ,form ,acc)))
+          forms
+          :initial-value value))
+
 (defun parse (in &key
                    (max-depth 128)
                    (allow-comments nil)
@@ -1033,11 +1049,12 @@ see `close-parser'"
                   (null #'identity)
                   ((eql t) (cond ((and *deserialize-camel-case-to-lisp-case*
                                        *deserialize-lisp-case-upcase*)
-                                  (compose (%make-string-pool)
-                                           (lambda (x) (string-upcase (cl-change-case:param-case x)))))
+                                  (compose* (%make-string-pool)
+                                            #'string-upcase
+                                            #'cl-change-case:param-case))
                                  (*deserialize-camel-case-to-lisp-case*
-                                  (compose (%make-string-pool)
-                                           #'cl-change-case:param-case))
+                                  (compose* (%make-string-pool)
+                                            #'cl-change-case:param-case))
                                  (t (%make-string-pool))))
                   (function key-fn)
                   (symbol   (fdefinition key-fn))))
