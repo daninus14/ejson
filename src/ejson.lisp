@@ -1085,7 +1085,7 @@ Example: (pipe 3 #'1+ #'sqrt) => (sqrt (1+ 3))"
 
 (defun satisfy-case (key)
   (if *serialize-lisp-case-to-camel-case*
-      (lisp-to-camel-case key)
+      (cl-change-case:camel-case key)
       key))
 
 (defgeneric %coerced-fields-slots (element))
