@@ -1,5 +1,5 @@
 (defsystem #:ejson
-  :version "0.9.0"
+  :version "1.0.0"
   :description "Extensible,correct and safe JSON RFC 8259 reader/writer"
   :author "Daniel Nussenbaum github.com/daninus14"
   :license "MIT"

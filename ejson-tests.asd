@@ -1,7 +1,7 @@
-(defsystem #:com.inuoe.jzon-tests
-  :version "0.0.0"
-  :description "Tests for the jzon library"
-  :author "Wilfredo Velázquez-Rodríguez <zulu.inuoe@gmail.com>"
+(defsystem #:ejson-tests
+  :version "1.0.0"
+  :description "Tests for the ejson library"
+  :author "Daniel Nussenbaum"
   :license "MIT"
   :components ((:module "test" :components ((:file "jzon-tests"))))
   :perform
