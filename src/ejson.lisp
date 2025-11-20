@@ -1120,6 +1120,10 @@ Example return value:
   (:method ((element standard-object))
     (%coerced-fields-slots element)))
 
+#+sbcl
+(defmethod coerced-fields ((element condition))
+  (%coerced-fields-slots element))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (declaim (inline %type=))
   (defun %type= (a b)
