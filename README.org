@@ -12,6 +12,7 @@ Mainly the changes we are adding are to:
 - Provide greater extensibility and flexibility of the system
 - Add some optional functionality lacking in jzon, but traditionally available in other json libraries like camel case to lisp case conversion
 - Add some convenience functionality systems to work well with other CL libraries based on the greater extensibility provided
+- Condition serialization with SBCL serialization like CLOS serialization and other implementations producing a =json= object with =condition= and =report= keys.
 
 Please see the section [Motivation and Features](#motivation-and-features) for a set of motivations driving ejson and why you should consider it over the other hundred options available for JSON in CL.
 
