@@ -1124,6 +1124,17 @@ Example return value:
 (defmethod coerced-fields ((element condition))
   (%coerced-fields-slots element))
 
+#-sbcl
+(defmethod coerced-fields ((element condition))
+  "This will produce a serialization akin to:
+\"{
+  \"condition\": \"COMBINED-ERROR\",
+  \"report\": \"#<COMBINED-ERROR {70055CD2D3}>\"
+}\""
+  (list
+   (list :condition (class-name (class-of element)))
+   (list :report (write-to-string element))))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (declaim (inline %type=))
   (defun %type= (a b)
