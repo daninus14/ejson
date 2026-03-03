@@ -839,7 +839,7 @@ This allows you to emit whatever values you wish for a given object.
 Once again considering our `person` and `job` classes above, we can specialize a method for `jzon:write-value` on `job`:
 
 ```lisp
-(defmethod jzon:write-value (writer (job job))
+(defmethod jzon:write-value ((writer jzon:writer) (job job))
   (cond
     ((string= (company job) "WISE")
       (jzon:write-object writer
