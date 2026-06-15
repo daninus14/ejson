@@ -275,6 +275,7 @@
   (is (equalp (ph "x" 1 "y" 2) (parse "{\"x\": 1, \"y\": 2}"))))
 
 (test parses-objects-eof
+  (signals (json-eof-error) (parse ""))
   (signals (json-eof-error) (parse "{"))
   (signals (json-eof-error) (parse "{\"x\": 1, \"y\": 2")))
 

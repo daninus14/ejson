@@ -334,7 +334,9 @@ see `json-atom'"
                 (let ((i start))
                   (declare (type (integer 0 #.array-dimension-limit) i))
                   (let* ((step (lambda () (when (< i end) (char in (shiftf i (1+ i))))))
-                         (pos (lambda () (%calc-pos step (- (shiftf i start) start))))
+                         (pos (if (= 0 (length in))
+                                  (lambda () (values 1 0))
+                                  (lambda () (%calc-pos step (- (shiftf i start) start)))))
                          (read-string (let ((string-accum (make-array (min 256 (1- array-dimension-limit)) :element-type 'character :adjustable t :fill-pointer 0)))
                                         (lambda ()
                                           ;; Scan until we hit a closing "
